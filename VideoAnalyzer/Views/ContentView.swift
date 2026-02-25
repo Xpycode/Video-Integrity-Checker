@@ -22,6 +22,13 @@ struct ContentView: View {
                             .font(.caption)
                             .foregroundStyle(.secondary)
                         Spacer()
+                        if viewModel.entries.contains(where: { $0.isAnalyzing }) {
+                            Button("Cancel All") {
+                                viewModel.cancelAll()
+                            }
+                            .buttonStyle(.borderless)
+                            .font(.caption)
+                        }
                         Text("Drop more files to add")
                             .font(.caption)
                             .foregroundStyle(.tertiary)
@@ -39,8 +46,51 @@ struct ContentView: View {
             DetailView(entry: viewModel.selectedEntry)
         }
         .navigationSplitViewStyle(.balanced)
+        .toolbar {
+            ToolbarItemGroup(placement: .primaryAction) {
+                Button {
+                    openFiles()
+                } label: {
+                    Label("Open", systemImage: "plus")
+                }
+
+                Button {
+                    viewModel.analyzeAllPending()
+                } label: {
+                    Label("Analyze All", systemImage: "play.fill")
+                }
+                .disabled(viewModel.entries.isEmpty)
+
+                Button {
+                    viewModel.clearAll()
+                } label: {
+                    Label("Clear", systemImage: "trash")
+                }
+                .disabled(viewModel.entries.isEmpty)
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .openFiles)) { _ in
+            openFiles()
+        }
+        .onDeleteCommand {
+            if let id = viewModel.selectedFileID {
+                viewModel.removeFile(id: id)
+            }
+        }
         .task {
             await viewModel.setup()
+        }
+    }
+
+    private func openFiles() {
+        let panel = NSOpenPanel()
+        panel.allowsMultipleSelection = true
+        panel.canChooseDirectories = true
+        panel.canChooseFiles = true
+        panel.allowedContentTypes = [.movie, .audio, .mpeg4Movie, .quickTimeMovie, .avi, .wav, .aiff, .mp3]
+
+        if panel.runModal() == .OK {
+            viewModel.addFiles(urls: panel.urls)
         }
     }
 

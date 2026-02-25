@@ -41,8 +41,13 @@ struct FileListView: View {
                 if let result = entry.result {
                     IssuesBadgeView(result: result)
                 } else if entry.isAnalyzing {
-                    ProgressView()
-                        .scaleEffect(0.5)
+                    if let pct = entry.progress?.percentage {
+                        ProgressView(value: pct)
+                            .frame(width: 60)
+                    } else {
+                        ProgressView()
+                            .scaleEffect(0.5)
+                    }
                 } else {
                     Text("—")
                 }

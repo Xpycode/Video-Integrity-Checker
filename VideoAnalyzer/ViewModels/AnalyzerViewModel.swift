@@ -40,6 +40,24 @@ final class AnalyzerViewModel {
             let modDate = attributes?[.modificationDate] as? Date
             let formatInfo = url.pathExtension.uppercased()
 
+            if fileSize == 0 {
+                let file = MediaFile(url: url, fileSize: 0, formatInfo: formatInfo.isEmpty ? nil : formatInfo)
+                let issue = MediaIssue(type: .other, severity: .error, description: "File is empty (0 bytes)")
+                let result = AnalysisResult(fileID: file.id, status: .error, issues: [issue], duration: 0, engineUsed: .avFoundation)
+                let entry = FileEntry(id: file.id, file: file, result: result, progress: nil, isAnalyzing: false)
+                entries.append(entry)
+                continue
+            }
+
+            if !FileManager.default.isReadableFile(atPath: url.path) {
+                let file = MediaFile(url: url, fileSize: fileSize, formatInfo: formatInfo.isEmpty ? nil : formatInfo)
+                let issue = MediaIssue(type: .other, severity: .error, description: "File is not readable — check permissions")
+                let result = AnalysisResult(fileID: file.id, status: .error, issues: [issue], duration: 0, engineUsed: .avFoundation)
+                let entry = FileEntry(id: file.id, file: file, result: result, progress: nil, isAnalyzing: false)
+                entries.append(entry)
+                continue
+            }
+
             let file = MediaFile(
                 url: url,
                 fileSize: fileSize,
@@ -97,6 +115,14 @@ final class AnalyzerViewModel {
             }
         }
         analysisTasks.removeAll()
+    }
+
+    func reanalyze(id: UUID) {
+        guard let idx = entries.firstIndex(where: { $0.id == id }) else { return }
+        cancelAnalysis(for: id)
+        entries[idx].result = nil
+        entries[idx].progress = nil
+        analyzeAllPending()
     }
 
     func removeFile(id: UUID) {

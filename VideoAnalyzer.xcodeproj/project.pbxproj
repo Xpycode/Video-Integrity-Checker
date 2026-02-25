@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		06ED393AF0866D0BECCE2DC1 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8C927930D18747E8AFA75D4 /* SettingsView.swift */; };
 		2D1D65332929DC7890F8122D /* DetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DA3CE19FC62F758250336D7 /* DetailView.swift */; };
 		37EB3044D077F19C9A4FD6DE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 43813C3F6BE43D7A5BF8C848 /* Assets.xcassets */; };
 		42924D8FE6D9CCA6703DCE20 /* AVFoundationAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 075952F8B7A5EF7875AEBE1B /* AVFoundationAnalyzer.swift */; };
@@ -19,6 +20,7 @@
 		9C30481D55CA9999AB48CF5B /* AnalysisResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751AF28A6BA10E4A1339B85F /* AnalysisResult.swift */; };
 		A52C53DB7504F3033F58A33F /* FFmpegAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6DD445B738519A095C17D8D /* FFmpegAnalyzer.swift */; };
 		ABC5D51CF79DDCFFDD6EE6E6 /* MediaIssue.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF4D3729D452136D7309F7E8 /* MediaIssue.swift */; };
+		BE35FBDA55AFDE242C6ADA09 /* AnalyzerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10EB919B908E36D7B3EF1F24 /* AnalyzerViewModel.swift */; };
 		C807BB7E570201E3A9EEE6AA /* AnalysisProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF4AAB5D02FB0B62A21AE79 /* AnalysisProgress.swift */; };
 		E78B1F5C6E93F4F0F98B8B0C /* MediaMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A0B83043C10BC2E4D1DBC60 /* MediaMetadata.swift */; };
 /* End PBXBuildFile section */
@@ -26,6 +28,7 @@
 /* Begin PBXFileReference section */
 		05FEBD9759F1C7AFBD76712F /* VideoAnalyzerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoAnalyzerApp.swift; sourceTree = "<group>"; };
 		075952F8B7A5EF7875AEBE1B /* AVFoundationAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AVFoundationAnalyzer.swift; sourceTree = "<group>"; };
+		10EB919B908E36D7B3EF1F24 /* AnalyzerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyzerViewModel.swift; sourceTree = "<group>"; };
 		19527ECE5094D4C1597ECDF8 /* VideoAnalyzer.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = VideoAnalyzer.entitlements; sourceTree = "<group>"; };
 		2DA3CE19FC62F758250336D7 /* DetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailView.swift; sourceTree = "<group>"; };
 		392ED10EC0339BC0315E840D /* MediaFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaFile.swift; sourceTree = "<group>"; };
@@ -38,6 +41,7 @@
 		A36D23289E737959271F739C /* AnalysisCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisCoordinator.swift; sourceTree = "<group>"; };
 		B6DD445B738519A095C17D8D /* FFmpegAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FFmpegAnalyzer.swift; sourceTree = "<group>"; };
 		BBD05AA27C0131590662B474 /* DropZoneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DropZoneView.swift; sourceTree = "<group>"; };
+		C8C927930D18747E8AFA75D4 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		CF4D3729D452136D7309F7E8 /* MediaIssue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaIssue.swift; sourceTree = "<group>"; };
 		E8B6BD81ADD821DD7D892575 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -68,6 +72,7 @@
 				55C17E671BF141FB7E747701 /* Models */,
 				A3AF4A83100729F7696E20DE /* Resources */,
 				1A425A0B9FE37AEAD1B1B3BC /* Services */,
+				5C09FBE8A901B7C6B750BB30 /* ViewModels */,
 				62CCFDA4D1D517DBE2C3FCD1 /* Views */,
 			);
 			path = VideoAnalyzer;
@@ -85,6 +90,14 @@
 			path = Models;
 			sourceTree = "<group>";
 		};
+		5C09FBE8A901B7C6B750BB30 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				10EB919B908E36D7B3EF1F24 /* AnalyzerViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
 		62CCFDA4D1D517DBE2C3FCD1 /* Views */ = {
 			isa = PBXGroup;
 			children = (
@@ -92,6 +105,7 @@
 				2DA3CE19FC62F758250336D7 /* DetailView.swift */,
 				BBD05AA27C0131590662B474 /* DropZoneView.swift */,
 				6FBB656DCF825FE6719D5251 /* FileListView.swift */,
+				C8C927930D18747E8AFA75D4 /* SettingsView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -195,6 +209,7 @@
 				7100C69B0DF3D60CF4C49C2F /* AnalysisCoordinator.swift in Sources */,
 				C807BB7E570201E3A9EEE6AA /* AnalysisProgress.swift in Sources */,
 				9C30481D55CA9999AB48CF5B /* AnalysisResult.swift in Sources */,
+				BE35FBDA55AFDE242C6ADA09 /* AnalyzerViewModel.swift in Sources */,
 				76D61AFBB95539BB1C0825B9 /* ContentView.swift in Sources */,
 				2D1D65332929DC7890F8122D /* DetailView.swift in Sources */,
 				5A1FAFFAB799CC4FEEC207CB /* DropZoneView.swift in Sources */,
@@ -203,6 +218,7 @@
 				7053EA7802F19AA519F0096F /* MediaFile.swift in Sources */,
 				ABC5D51CF79DDCFFDD6EE6E6 /* MediaIssue.swift in Sources */,
 				E78B1F5C6E93F4F0F98B8B0C /* MediaMetadata.swift in Sources */,
+				06ED393AF0866D0BECCE2DC1 /* SettingsView.swift in Sources */,
 				598E45281F720D2FBE9AE43B /* VideoAnalyzerApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

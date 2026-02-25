@@ -7,5 +7,9 @@ struct VideoAnalyzerApp: App {
             ContentView()
                 .frame(minWidth: 800, minHeight: 500)
         }
+
+        Settings {
+            SettingsView()
+        }
     }
 }

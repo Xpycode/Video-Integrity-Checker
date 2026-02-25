@@ -9,40 +9,40 @@
 - **Started:** 2026-02-25
 
 ## Current Position
-- **Funnel:** define
-- **Phase:** discovery
-- **Focus:** Architecture decisions — AVFoundation primary, optional ffmpeg
-- **Status:** ready
+- **Funnel:** build
+- **Phase:** implementation
+- **Focus:** Core implementation complete — needs real-file testing and polish
+- **Status:** in progress
 - **Last updated:** 2026-02-25
 
 ## Funnel Progress
 
 | Funnel | Status | Gate |
 |--------|--------|------|
-| **Define** | active | Interview done, spec reviewed |
-| **Plan** | pending | Tasks <30min, backpressure defined |
-| **Build** | pending | Tests pass, review done |
+| **Define** | done | Interview done, spec reviewed |
+| **Plan** | done | Implementation plan created |
+| **Build** | active | Waves 1-5 complete, verification next |
 
 ## Phase Progress
 ```
-[##..................] 10% - Discovery complete, planning next
+[################....] 80% - Core implementation done, testing/polish next
 ```
 
 | Phase | Status | Tasks |
 |-------|--------|-------|
-| Discovery | **active** | Architecture decided |
-| Planning | pending | Implementation plan |
-| Implementation | pending | — |
-| Polish | pending | — |
+| Discovery | done | Architecture decided |
+| Planning | done | 6-wave implementation plan |
+| Implementation | **active** | Waves 1-5 complete (13/13 tasks) |
+| Polish | pending | Real-file testing, performance |
 
 ## Readiness
 
 | Dimension | Status | Notes |
 |-----------|--------|-------|
-| Features | — | Not started |
-| UI/Polish | — | Not started |
-| Testing | — | Not started |
-| Docs | — | Directions set up |
+| Features | partial | Core analysis working, needs real-file testing |
+| UI/Polish | partial | NavigationSplitView, toolbar, drop zone done |
+| Testing | — | No unit tests yet |
+| Docs | partial | Directions set up, CLAUDE.md current |
 | Distribution | — | Direct download (non-App Store) |
 
 ## Architecture Decisions

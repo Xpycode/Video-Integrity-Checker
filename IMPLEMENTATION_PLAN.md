@@ -23,13 +23,13 @@ Build a native macOS app that analyzes media files for errors and corruption usi
 
 ### Wave 1: Foundation (parallel — no dependencies)
 
-- [ ] **1.1**: Create Xcode project with SwiftUI lifecycle → `VideoAnalyzer.xcodeproj`
+- [x] **1.1**: Create Xcode project with SwiftUI lifecycle → `VideoAnalyzer.xcodeproj`
   - macOS 15+, Swift 6, strict concurrency
   - Single window, app icon placeholder
   - Success: App launches with empty window
   - Backpressure: `xcodebuild build`
 
-- [ ] **1.2**: Define data models → `Models/`
+- [x] **1.2**: Define data models → `Models/`
   - `MediaFile` — URL, file size, modification date, format info
   - `AnalysisResult` — overall status (healthy/warning/error), issues list, metadata
   - `MediaIssue` — type (decodeError, timestampGap, truncation, etc.), timestamp, severity, description
@@ -40,7 +40,7 @@ Build a native macOS app that analyzes media files for errors and corruption usi
 
 ### Wave 2: Analysis Engines (depends on Wave 1)
 
-- [ ] **2.1**: AVFoundation analyzer → `Services/AVFoundationAnalyzer.swift`
+- [x] **2.1**: AVFoundation analyzer → `Services/AVFoundationAnalyzer.swift`
   - Load AVAsset, check `isReadable`, `isPlayable`
   - Load tracks, extract metadata (codec via `formatDescriptions`, resolution, duration, frame rate)
   - Read video track frame-by-frame via AVAssetReader + AVAssetReaderTrackOutput
@@ -56,7 +56,7 @@ Build a native macOS app that analyzes media files for errors and corruption usi
   - Success: Can analyze an MP4/MOV and report errors or clean bill of health
   - Backpressure: Unit test with known-good and known-bad test files
 
-- [ ] **2.2**: ffmpeg analyzer → `Services/FFmpegAnalyzer.swift`
+- [x] **2.2**: ffmpeg analyzer → `Services/FFmpegAnalyzer.swift`
   - Detect ffmpeg: check `/opt/homebrew/bin/ffmpeg`, `/usr/local/bin/ffmpeg`, user preference
   - Run via Process: `ffmpeg -nostdin -v error -i <file> -f null -`
   - Capture stderr, parse error lines
@@ -66,7 +66,7 @@ Build a native macOS app that analyzes media files for errors and corruption usi
   - Success: Can analyze MKV/WebM files and report errors
   - Backpressure: Unit test with ffmpeg available and unavailable
 
-- [ ] **2.3**: Analysis coordinator → `Services/AnalysisCoordinator.swift`
+- [x] **2.3**: Analysis coordinator → `Services/AnalysisCoordinator.swift`
   - Decide which engine to use based on file format
   - AVFoundation-supported UTTypes: .mov, .mp4, .m4v, .m4a, .wav, .aiff, .mp3, .ts
   - ffmpeg fallback: everything else (if available)
@@ -77,14 +77,14 @@ Build a native macOS app that analyzes media files for errors and corruption usi
 
 ### Wave 3: UI (depends on Wave 1 models)
 
-- [ ] **3.1**: Main window with drop zone → `Views/ContentView.swift`, `Views/DropZoneView.swift`
+- [x] **3.1**: Main window with drop zone → `Views/ContentView.swift`, `Views/DropZoneView.swift`
   - Large drop zone when no files loaded ("Drop media files here to analyze")
   - Accept media file UTTypes + folders
   - Also support File > Open menu and toolbar button
   - Success: Can drop files onto window, URLs are captured
   - Backpressure: Build + manual test
 
-- [ ] **3.2**: File list / results table → `Views/FileListView.swift`
+- [x] **3.2**: File list / results table → `Views/FileListView.swift`
   - SwiftUI Table with columns: filename, status (icon), format, duration, size
   - Status icons: checkmark (green), warning (yellow), error (red), spinner (analyzing), dash (queued)
   - Row selection shows detail in sidebar/inspector
@@ -92,7 +92,7 @@ Build a native macOS app that analyzes media files for errors and corruption usi
   - Success: Files appear in table with status
   - Backpressure: Build + preview
 
-- [ ] **3.3**: Detail inspector → `Views/DetailView.swift`
+- [x] **3.3**: Detail inspector → `Views/DetailView.swift`
   - Metadata section: codec, resolution, duration, bitrate, frame rate, audio info
   - Issues section: list of issues with timestamps, severity, description
   - Overall verdict: banner at top (Healthy / X warnings / X errors)
@@ -101,7 +101,7 @@ Build a native macOS app that analyzes media files for errors and corruption usi
 
 ### Wave 4: ViewModel + Wiring (depends on Wave 2 + 3)
 
-- [ ] **4.1**: Main view model → `ViewModels/AnalyzerViewModel.swift`
+- [x] **4.1**: Main view model → `ViewModels/AnalyzerViewModel.swift`
   - @Observable class
   - Holds list of MediaFile + AnalysisResult pairs
   - Triggers analysis on file add
@@ -110,7 +110,7 @@ Build a native macOS app that analyzes media files for errors and corruption usi
   - Success: Drop files → analysis runs → results appear in table
   - Backpressure: Build + end-to-end manual test
 
-- [ ] **4.2**: Settings / preferences → `Views/SettingsView.swift`
+- [x] **4.2**: Settings / preferences → `Views/SettingsView.swift`
   - ffmpeg path: auto-detect or manual browse
   - Concurrency limit (number of simultaneous analyses)
   - Analysis depth: quick (metadata only) vs deep (full decode)
@@ -119,21 +119,21 @@ Build a native macOS app that analyzes media files for errors and corruption usi
 
 ### Wave 5: Polish + Integration (depends on Wave 4)
 
-- [ ] **5.1**: Toolbar + menus → `App/VideoAnalyzerApp.swift`
+- [x] **5.1**: Toolbar + menus → `App/VideoAnalyzerApp.swift`
   - Toolbar: Open, Analyze All, Clear, Settings
   - Menu bar: File > Open, Edit > Select All, View options
   - Keyboard shortcuts: Cmd+O (open), Cmd+Delete (remove selected)
   - Success: Standard macOS app feel
   - Backpressure: Build + manual test
 
-- [ ] **5.2**: Progress and cancellation
+- [x] **5.2**: Progress and cancellation
   - Per-file progress bar in table row
   - Overall progress in toolbar or bottom bar
   - Cancel button per file and cancel all
   - Success: Can cancel running analysis
   - Backpressure: Manual test with large file
 
-- [ ] **5.3**: Error states and edge cases
+- [x] **5.3**: Error states and edge cases
   - File not found / permission denied
   - Zero-byte files
   - Non-media files dropped
@@ -221,12 +221,11 @@ Check in order:
 
 | Wave | Started | Completed | Commits |
 |------|---------|-----------|---------|
-| 1 | | | |
-| 2 | | | |
-| 3 | | | |
-| 4 | | | |
-| 5 | | | |
-| 6 | | | |
+| 1 | 2026-02-25 | 2026-02-25 | 85f6b32 |
+| 2+3 | 2026-02-25 | 2026-02-25 | 741ffb8 |
+| 4 | 2026-02-25 | 2026-02-25 | 372ad90 |
+| 5 | 2026-02-25 | 2026-02-25 | 19a2eb6 |
+| 6 | 2026-02-25 | in progress | — |
 
 ---
 *Delete this file when all tasks complete. Archive to sessions/ if needed for reference.*

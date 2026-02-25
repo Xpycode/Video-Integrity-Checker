@@ -1,0 +1,34 @@
+name: VideoAnalyzer
+options:
+  bundleIdPrefix: com.videoanalyzer
+  deploymentTarget:
+    macOS: "15.0"
+  xcodeVersion: "16.0"
+  createIntermediateGroups: true
+  defaultConfig: Debug
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    MACOSX_DEPLOYMENT_TARGET: "15.0"
+
+targets:
+  VideoAnalyzer:
+    type: application
+    platform: macOS
+    sources:
+      - path: VideoAnalyzer
+        excludes:
+          - "**/.DS_Store"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.videoanalyzer.VideoAnalyzer
+        PRODUCT_NAME: VideoAnalyzer
+        INFOPLIST_GENERATION_MODE: GeneratedFile
+        MARKETING_VERSION: "1.0.0"
+        CURRENT_PROJECT_VERSION: "1"
+        CODE_SIGN_ENTITLEMENTS: VideoAnalyzer/App/VideoAnalyzer.entitlements
+        CODE_SIGN_STYLE: Automatic
+        GENERATE_INFOPLIST_FILE: YES
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon

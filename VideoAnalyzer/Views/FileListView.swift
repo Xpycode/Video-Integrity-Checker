@@ -18,24 +18,25 @@ struct FileListView: View {
             TableColumn("") { entry in
                 StatusIconView(entry: entry)
             }
-            .width(30)
+            .width(min: 30, ideal: 30, max: 30)
 
             TableColumn("Name", value: \.file.fileName)
+                .width(min: 120, ideal: 300)
 
             TableColumn("Format") { entry in
                 Text(entry.file.formatInfo ?? "—")
             }
-            .width(60)
+            .width(min: 50, ideal: 70, max: 90)
 
             TableColumn("Duration") { entry in
                 Text(entry.result?.metadata?.durationFormatted ?? "—")
             }
-            .width(80)
+            .width(min: 70, ideal: 85, max: 100)
 
             TableColumn("Size") { entry in
                 Text(entry.file.fileSizeFormatted)
             }
-            .width(80)
+            .width(min: 60, ideal: 80, max: 100)
 
             TableColumn("Issues") { entry in
                 if let result = entry.result {
@@ -52,7 +53,7 @@ struct FileListView: View {
                     Text("—")
                 }
             }
-            .width(80)
+            .width(min: 60, ideal: 80, max: 100)
         }
         .contextMenu(forSelectionType: UUID.self) { ids in
             if let id = ids.first {

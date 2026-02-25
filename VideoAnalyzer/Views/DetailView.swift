@@ -5,25 +5,37 @@ struct DetailView: View {
 
     var body: some View {
         if let entry {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    StatusBannerView(entry: entry)
+            VStack(spacing: 0) {
+                StatusBannerView(entry: entry)
+                    .padding(.horizontal)
+                    .padding(.top, 12)
+                    .padding(.bottom, 8)
 
-                    Divider()
+                Divider()
 
-                    FileInfoSection(file: entry.file, result: entry.result)
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 12) {
+                        if let result = entry.result, !result.issues.isEmpty {
+                            IssuesSection(issues: result.issues)
+                        }
 
-                    if let metadata = entry.result?.metadata {
-                        Divider()
-                        MetadataSection(metadata: metadata)
+                        HStack(alignment: .top, spacing: 12) {
+                            FileInfoSection(file: entry.file, result: entry.result)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+
+                            if let metadata = entry.result?.metadata {
+                                MetadataSection(metadata: metadata)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                                if !metadata.tracks.isEmpty {
+                                    TracksSection(tracks: metadata.tracks)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                }
+                            }
+                        }
                     }
-
-                    if let result = entry.result, !result.issues.isEmpty {
-                        Divider()
-                        IssuesSection(issues: result.issues)
-                    }
+                    .padding()
                 }
-                .padding()
             }
         } else {
             ContentUnavailableView(
@@ -39,26 +51,22 @@ private struct StatusBannerView: View {
     let entry: FileEntry
 
     var body: some View {
-        RoundedRectangle(cornerRadius: 10)
-            .fill(bannerColor.opacity(0.15))
-            .overlay(
-                HStack(spacing: 10) {
-                    bannerIcon
-                        .font(.title2)
-                        .foregroundStyle(bannerColor)
-                    Text(bannerText)
-                        .font(.headline)
-                        .foregroundStyle(bannerColor)
-                    Spacer()
-                    if entry.isAnalyzing {
-                        ProgressView()
-                            .scaleEffect(0.8)
-                    }
-                }
-                .padding(.horizontal, 14)
-                .padding(.vertical, 10)
-            )
-            .frame(maxWidth: .infinity)
+        HStack(spacing: 10) {
+            bannerIcon
+                .font(.title2)
+                .foregroundStyle(bannerColor)
+            Text(bannerText)
+                .font(.headline)
+                .foregroundStyle(bannerColor)
+            Spacer()
+            if entry.isAnalyzing {
+                ProgressView()
+                    .scaleEffect(0.8)
+            }
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .background(bannerColor.opacity(0.15), in: RoundedRectangle(cornerRadius: 10))
     }
 
     private var bannerText: String {
@@ -181,17 +189,6 @@ private struct MetadataSection: View {
                 if let channels = metadata.audioChannels {
                     LabeledContent("Audio", value: formattedAudio(channels: channels, sampleRate: metadata.audioSampleRate))
                 }
-
-                if !metadata.tracks.isEmpty {
-                    Divider()
-                        .padding(.vertical, 4)
-                    Text("Tracks")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    ForEach(metadata.tracks) { track in
-                        TrackRowView(track: track)
-                    }
-                }
             }
         } label: {
             Text("Media Info")
@@ -213,6 +210,23 @@ private struct MetadataSection: View {
             return "\(channelStr) @ \(String(format: "%.1f", rate / 1000)) kHz"
         }
         return channelStr
+    }
+}
+
+private struct TracksSection: View {
+    let tracks: [TrackInfo]
+
+    var body: some View {
+        GroupBox {
+            VStack(alignment: .leading, spacing: 6) {
+                ForEach(tracks) { track in
+                    TrackRowView(track: track)
+                }
+            }
+        } label: {
+            Text("Tracks")
+                .font(.headline)
+        }
     }
 }
 

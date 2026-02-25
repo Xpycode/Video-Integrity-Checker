@@ -278,10 +278,31 @@ actor AVFoundationAnalyzer {
         switch reader.status {
         case .failed:
             let desc = reader.error?.localizedDescription ?? "Unknown decode error"
+            let errorCode = (reader.error as? NSError)?.code
+            let lastTimestamp = lastPTS.isValid ? CMTimeGetSeconds(lastPTS) : nil
+
+            var detail = "Decode failed after \(frameCount) frame\(frameCount == 1 ? "" : "s")"
+            if let total = totalFrames, total > 0 {
+                let pct = Int(Double(frameCount) / Double(total) * 100)
+                detail += " (\(pct)% of file)"
+            }
+            if let ts = lastTimestamp, !ts.isNaN {
+                let h = Int(ts) / 3600
+                let m = (Int(ts) % 3600) / 60
+                let s = Int(ts) % 60
+                detail += " at \(String(format: "%02d:%02d:%02d", h, m, s))"
+            }
+            detail += ". \(desc)"
+            if let code = errorCode {
+                detail += " (error \(code))"
+            }
+
             issues.append(MediaIssue(
                 type: .decodeError,
                 severity: .error,
-                description: "AVAssetReader failed: \(desc)"
+                timestamp: lastTimestamp,
+                frameNumber: frameCount,
+                description: detail
             ))
         case .completed:
             if let total = totalFrames, total > 0 {
@@ -291,7 +312,7 @@ actor AVFoundationAnalyzer {
                         type: .truncation,
                         severity: .warning,
                         frameNumber: frameCount,
-                        description: "File may be truncated: decoded \(frameCount) frames, expected ~\(total)"
+                        description: "File may be truncated: decoded \(frameCount) of ~\(total) expected frames (\(Int(ratio * 100))%)"
                     ))
                 }
             }

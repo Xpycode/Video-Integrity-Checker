@@ -4,48 +4,52 @@ struct ContentView: View {
     @State private var viewModel = AnalyzerViewModel()
 
     var body: some View {
-        NavigationSplitView {
+        Group {
             if viewModel.entries.isEmpty {
                 DropZoneView { urls in
                     viewModel.addFiles(urls: urls)
                 }
             } else {
-                VStack(spacing: 0) {
-                    FileListView(
-                        entries: viewModel.entries,
-                        selectedFileID: $viewModel.selectedFileID,
-                        onRemove: { id in viewModel.removeFile(id: id) }
-                    )
+                VSplitView {
+                    VStack(spacing: 0) {
+                        FileListView(
+                            entries: viewModel.entries,
+                            selectedFileID: $viewModel.selectedFileID,
+                            onRemove: { id in viewModel.removeFile(id: id) }
+                        )
+                        .frame(maxWidth: .infinity)
 
-                    HStack {
-                        Text(viewModel.overallProgress)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        Spacer()
-                        if viewModel.entries.contains(where: { $0.isAnalyzing }) {
-                            Button("Cancel All") {
-                                viewModel.cancelAll()
+                        HStack {
+                            Text(viewModel.overallProgress)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            if viewModel.entries.contains(where: { $0.isAnalyzing }) {
+                                Button("Cancel All") {
+                                    viewModel.cancelAll()
+                                }
+                                .buttonStyle(.borderless)
+                                .font(.caption)
                             }
-                            .buttonStyle(.borderless)
-                            .font(.caption)
+                            Text("Drop more files to add")
+                                .font(.caption)
+                                .foregroundStyle(.tertiary)
                         }
-                        Text("Drop more files to add")
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(.bar)
                     }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(.bar)
-                }
-                .onDrop(of: [.fileURL], isTargeted: nil) { providers in
-                    handleDrop(providers: providers)
-                    return true
+                    .onDrop(of: [.fileURL], isTargeted: nil) { providers in
+                        handleDrop(providers: providers)
+                        return true
+                    }
+                    .frame(minHeight: 120, idealHeight: 220)
+
+                    DetailView(entry: viewModel.selectedEntry)
+                        .frame(minHeight: 200, idealHeight: 300)
                 }
             }
-        } detail: {
-            DetailView(entry: viewModel.selectedEntry)
         }
-        .navigationSplitViewStyle(.balanced)
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
                 Button {

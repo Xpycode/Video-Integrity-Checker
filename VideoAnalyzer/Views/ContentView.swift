@@ -17,7 +17,7 @@ struct ContentView: View {
                             selectedFileID: $viewModel.selectedFileID,
                             onRemove: { id in viewModel.removeFile(id: id) }
                         )
-                        .frame(maxWidth: .infinity)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
 
                         HStack {
                             Text(viewModel.overallProgress)
@@ -43,11 +43,12 @@ struct ContentView: View {
                         handleDrop(providers: providers)
                         return true
                     }
-                    .frame(minHeight: 120, idealHeight: 220)
+                    .frame(maxWidth: .infinity, minHeight: 120, idealHeight: 220)
 
                     DetailView(entry: viewModel.selectedEntry)
-                        .frame(minHeight: 200, idealHeight: 300)
+                        .frame(maxWidth: .infinity, minHeight: 200, idealHeight: 300)
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
         .toolbar {

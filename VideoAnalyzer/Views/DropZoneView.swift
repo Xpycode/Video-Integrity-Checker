@@ -8,7 +8,7 @@ struct DropZoneView: View {
 
     nonisolated private static let supportedExtensions: Set<String> = [
         "mov", "mp4", "m4v", "m4a", "wav", "aiff", "mp3",
-        "ts", "mkv", "webm", "avi", "flv", "wmv"
+        "ts", "mkv", "webm", "avi", "flv", "wmv", "mxf"
     ]
 
     var body: some View {

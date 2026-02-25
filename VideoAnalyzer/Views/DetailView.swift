@@ -318,14 +318,6 @@ private struct IssueRowView: View {
         }
     }
 
-    private var severityIcon: String {
-        switch issue.severity {
-        case .info: return "info.circle.fill"
-        case .warning: return "exclamationmark.triangle.fill"
-        case .error: return "xmark.circle.fill"
-        }
-    }
-
     private var severityColor: Color {
         switch issue.severity {
         case .info: return .blue
@@ -342,7 +334,27 @@ private struct IssueRowView: View {
         case .missingTrack: return "Missing Track"
         case .corruptHeader: return "Corrupt Header"
         case .unsupportedCodec: return "Unsupported Codec"
+        case .containerMetadata: return "Container Metadata"
+        case .containerStructure: return "Container Structure"
+        case .engineMismatch: return "Engine Mismatch"
         case .other: return "Other"
+        }
+    }
+
+    private var severityIcon: String {
+        switch issue.type {
+        case .containerMetadata, .containerStructure:
+            switch issue.severity {
+            case .info: return "archivebox"
+            case .warning: return "archivebox.fill"
+            case .error: return "archivebox.fill"
+            }
+        default:
+            switch issue.severity {
+            case .info: return "info.circle.fill"
+            case .warning: return "exclamationmark.triangle.fill"
+            case .error: return "xmark.circle.fill"
+            }
         }
     }
 

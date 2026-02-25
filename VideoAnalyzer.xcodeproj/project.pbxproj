@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0177889900112233445566CC /* MXFInspector.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC33DD44EE55FF6677889900 /* MXFInspector.swift */; };
 		06ED393AF0866D0BECCE2DC1 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8C927930D18747E8AFA75D4 /* SettingsView.swift */; };
 		2D1D65332929DC7890F8122D /* DetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DA3CE19FC62F758250336D7 /* DetailView.swift */; };
 		37EB3044D077F19C9A4FD6DE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 43813C3F6BE43D7A5BF8C848 /* Assets.xcassets */; };
@@ -23,6 +24,9 @@
 		BE35FBDA55AFDE242C6ADA09 /* AnalyzerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10EB919B908E36D7B3EF1F24 /* AnalyzerViewModel.swift */; };
 		C807BB7E570201E3A9EEE6AA /* AnalysisProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF4AAB5D02FB0B62A21AE79 /* AnalysisProgress.swift */; };
 		E78B1F5C6E93F4F0F98B8B0C /* MediaMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A0B83043C10BC2E4D1DBC60 /* MediaMetadata.swift */; };
+		EE55FF6677889900112233AA /* ContainerInspector.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF66 /* ContainerInspector.swift */; };
+		FF66778899001122334455BB /* ISOBMFFInspector.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22CC33DD44EE55FF667788 /* ISOBMFFInspector.swift */; };
+		1188990011223344556677DD /* ContainerInspectorRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD44EE55FF66778899001122 /* ContainerInspectorRegistry.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -44,6 +48,10 @@
 		C8C927930D18747E8AFA75D4 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		CF4D3729D452136D7309F7E8 /* MediaIssue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaIssue.swift; sourceTree = "<group>"; };
 		E8B6BD81ADD821DD7D892575 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		AA11BB22CC33DD44EE55FF66 /* ContainerInspector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContainerInspector.swift; sourceTree = "<group>"; };
+		BB22CC33DD44EE55FF667788 /* ISOBMFFInspector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ISOBMFFInspector.swift; sourceTree = "<group>"; };
+		CC33DD44EE55FF6677889900 /* MXFInspector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MXFInspector.swift; sourceTree = "<group>"; };
+		DD44EE55FF66778899001122 /* ContainerInspectorRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContainerInspectorRegistry.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -60,9 +68,21 @@
 			children = (
 				A36D23289E737959271F739C /* AnalysisCoordinator.swift */,
 				075952F8B7A5EF7875AEBE1B /* AVFoundationAnalyzer.swift */,
+				2299001122334455667788EE /* ContainerInspection */,
 				B6DD445B738519A095C17D8D /* FFmpegAnalyzer.swift */,
 			);
 			path = Services;
+			sourceTree = "<group>";
+		};
+		2299001122334455667788EE /* ContainerInspection */ = {
+			isa = PBXGroup;
+			children = (
+				AA11BB22CC33DD44EE55FF66 /* ContainerInspector.swift */,
+				DD44EE55FF66778899001122 /* ContainerInspectorRegistry.swift */,
+				BB22CC33DD44EE55FF667788 /* ISOBMFFInspector.swift */,
+				CC33DD44EE55FF6677889900 /* MXFInspector.swift */,
+			);
+			path = ContainerInspection;
 			sourceTree = "<group>";
 		};
 		4D299CBB4F054F2389471C27 /* VideoAnalyzer */ = {
@@ -208,6 +228,10 @@
 				42924D8FE6D9CCA6703DCE20 /* AVFoundationAnalyzer.swift in Sources */,
 				7100C69B0DF3D60CF4C49C2F /* AnalysisCoordinator.swift in Sources */,
 				C807BB7E570201E3A9EEE6AA /* AnalysisProgress.swift in Sources */,
+				EE55FF6677889900112233AA /* ContainerInspector.swift in Sources */,
+				FF66778899001122334455BB /* ISOBMFFInspector.swift in Sources */,
+				0177889900112233445566CC /* MXFInspector.swift in Sources */,
+				1188990011223344556677DD /* ContainerInspectorRegistry.swift in Sources */,
 				9C30481D55CA9999AB48CF5B /* AnalysisResult.swift in Sources */,
 				BE35FBDA55AFDE242C6ADA09 /* AnalyzerViewModel.swift in Sources */,
 				76D61AFBB95539BB1C0825B9 /* ContentView.swift in Sources */,

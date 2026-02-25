@@ -7,6 +7,9 @@ enum IssueType: String, Sendable, CaseIterable {
     case missingTrack
     case corruptHeader
     case unsupportedCodec
+    case containerMetadata   // Edit list, index table, keyframe alignment issues
+    case containerStructure  // Malformed boxes/atoms, truncated atoms, missing required atoms
+    case engineMismatch      // AVFoundation fails but ffmpeg succeeds (or vice versa)
     case other
 }
 

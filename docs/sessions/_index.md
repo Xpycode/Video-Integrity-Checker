@@ -10,7 +10,7 @@ VideoAnalyzer - Native macOS app for media file error/corruption detection
 
 | Date | Focus | Outcome | Log |
 |------|-------|---------|-----|
-| 2026-02-25 | Full implementation via wave execution | 13 files, Waves 1-5 complete, app analyzes real media | [log](2026-02-25.md) |
+| 2026-02-25 | Full implementation + container inspection | 17 files, container-level diagnostics for MP4/MOV, edit list validation | [log](2026-02-25.md) |
 | 2026-02-18 | Install XcodePreviews globally | Cloned, installed `/preview` command, updated ecosystem docs, tested on Group Alarms | [log](2026-02-18.md) |
 | 2026-02-02 | Deploy cookbook + sync commands | Vestige patterns stored, 7 commands added to global CLAUDE.md | [log](2026-02-02.md) |
 | 2026-01-29 | Installed Vestige memory MCP server | MCP configured for Claude | [log](2026-01-29.md) |

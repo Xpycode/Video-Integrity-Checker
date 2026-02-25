@@ -11,7 +11,8 @@ actor AnalysisCoordinator {
     ]
 
     private static let ffmpegExtensions: Set<String> = [
-        "mkv", "webm", "avi", "flv", "wmv", "ogg", "ogv", "vob"
+        "mkv", "webm", "avi", "flv", "wmv", "ogg", "ogv", "vob",
+        "mxf"
     ]
 
     func setConcurrencyLimit(_ limit: Int) {
@@ -41,6 +42,22 @@ actor AnalysisCoordinator {
     func analyzeFile(_ file: MediaFile, progressHandler: @Sendable (AnalysisProgress) -> Void) async -> AnalysisResult {
         let start = Date()
 
+        // Phase 1: Container inspection (pre-pass)
+        var containerIssues: [MediaIssue] = []
+        do {
+            if let report = try await ContainerInspectorRegistry.inspect(url: file.url) {
+                // report.metadata will be used for container detail display in a future update
+                containerIssues = report.issues.map { $0.toMediaIssue() }
+            }
+        } catch {
+            containerIssues.append(MediaIssue(
+                type: .containerStructure,
+                severity: .warning,
+                description: "Container inspection failed: \(error.localizedDescription)"
+            ))
+        }
+
+        // Phase 2: Decode analysis
         guard let engine = await engineFor(url: file.url) else {
             let issue = MediaIssue(
                 type: .unsupportedCodec,
@@ -50,19 +67,63 @@ actor AnalysisCoordinator {
             return AnalysisResult(
                 fileID: file.id,
                 status: .error,
-                issues: [issue],
+                issues: containerIssues + [issue],
                 duration: Date().timeIntervalSince(start),
                 engineUsed: .ffmpeg
             )
         }
 
         do {
+            var result: AnalysisResult
             switch engine {
             case .avFoundation:
-                return try await avAnalyzer.analyze(file: file, progressHandler: progressHandler)
+                result = try await avAnalyzer.analyze(file: file, progressHandler: progressHandler)
             case .ffmpeg:
-                return try await ffmpegAnalyzer.analyze(file: file)
+                result = try await ffmpegAnalyzer.analyze(file: file)
             }
+
+            // Merge container issues with decode issues, correlating causes
+            if !containerIssues.isEmpty {
+                let hasDecodeError = result.issues.contains { $0.type == .decodeError && $0.severity == .error }
+
+                let escalatedContainerIssues: [MediaIssue] = containerIssues.map { issue in
+                    // Escalate container metadata warnings to errors when they caused a decode failure
+                    if hasDecodeError && issue.type == .containerMetadata && issue.severity == .warning {
+                        return MediaIssue(
+                            type: issue.type,
+                            severity: .error,
+                            timestamp: issue.timestamp,
+                            frameNumber: issue.frameNumber,
+                            description: issue.description + " — This is the likely cause of the decode failure below."
+                        )
+                    }
+                    return issue
+                }
+
+                let mergedIssues = escalatedContainerIssues + result.issues
+
+                // Recalculate status with merged issues
+                let status: AnalysisStatus
+                if mergedIssues.contains(where: { $0.severity == .error }) {
+                    status = .error
+                } else if mergedIssues.contains(where: { $0.severity == .warning }) {
+                    status = .warning
+                } else {
+                    status = .healthy
+                }
+
+                result = AnalysisResult(
+                    fileID: result.fileID,
+                    status: status,
+                    issues: mergedIssues,
+                    metadata: result.metadata,
+                    analysisDate: result.analysisDate,
+                    duration: Date().timeIntervalSince(start),
+                    engineUsed: result.engineUsed
+                )
+            }
+
+            return result
         } catch {
             let issue = MediaIssue(
                 type: .other,
@@ -72,7 +133,7 @@ actor AnalysisCoordinator {
             return AnalysisResult(
                 fileID: file.id,
                 status: .error,
-                issues: [issue],
+                issues: containerIssues + [issue],
                 duration: Date().timeIntervalSince(start),
                 engineUsed: engine
             )

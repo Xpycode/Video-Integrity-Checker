@@ -146,8 +146,9 @@ struct ISOBMFFInspector: ContainerInspector {
     private func parseBoxes(data: Data, offset: UInt64, end: UInt64, depth: Int, maxDepth: Int) -> [BoxInfo] {
         var boxes: [BoxInfo] = []
         var pos = offset
+        let safeEnd = min(end, UInt64(data.count))
 
-        while pos + 8 <= end {
+        while pos + 8 <= safeEnd {
             let size32 = data.readUInt32BE(at: pos)
             let typeBytes = data[Int(pos + 4)..<Int(pos + 8)]
             let type = String(data: typeBytes, encoding: .ascii) ?? "????"
@@ -157,18 +158,18 @@ struct ISOBMFFInspector: ContainerInspector {
 
             if size32 == 1 {
                 // 64-bit extended size
-                guard pos + 16 <= end else { break }
+                guard pos + 16 <= safeEnd else { break }
                 boxSize = data.readUInt64BE(at: pos + 8)
                 headerSize = 16
             } else if size32 == 0 {
                 // Box extends to end of file
-                boxSize = end - pos
+                boxSize = safeEnd - pos
             } else {
                 boxSize = UInt64(size32)
             }
 
             guard boxSize >= headerSize else { break }
-            guard pos + boxSize <= end else {
+            guard pos + boxSize <= safeEnd else {
                 // Truncated box — record what we have
                 boxes.append(BoxInfo(type: type, offset: pos, size: boxSize))
                 break
@@ -186,12 +187,13 @@ struct ISOBMFFInspector: ContainerInspector {
         return boxes
     }
 
+    private static let containerTypes: Set<String> = [
+        "moov", "trak", "mdia", "minf", "stbl", "udta", "meta",
+        "edts", "dinf", "sinf", "mvex", "moof", "traf", "schi"
+    ]
+
     private func isContainerBox(_ type: String) -> Bool {
-        let containers: Set<String> = [
-            "moov", "trak", "mdia", "minf", "stbl", "udta", "meta",
-            "edts", "dinf", "sinf", "mvex", "moof", "traf", "schi"
-        ]
-        return containers.contains(type)
+        Self.containerTypes.contains(type)
     }
 
     // MARK: - Top-level Validation
@@ -266,7 +268,8 @@ struct ISOBMFFInspector: ContainerInspector {
 
     private func parseEditList(data: Data, box: BoxInfo) -> [EditListEntry] {
         let bodyStart = box.offset + 8
-        guard bodyStart + 8 <= box.offset + box.size else { return [] }
+        let boxEnd = min(box.offset + box.size, UInt64(data.count))
+        guard bodyStart + 8 <= boxEnd else { return [] }
 
         let version = data[Int(bodyStart)]
         let entryCount = data.readUInt32BE(at: bodyStart + 4)
@@ -275,7 +278,7 @@ struct ISOBMFFInspector: ContainerInspector {
 
         for _ in 0..<entryCount {
             if version == 0 {
-                guard pos + 12 <= box.offset + box.size else { break }
+                guard pos + 12 <= boxEnd else { break }
                 let duration = Int64(data.readUInt32BE(at: pos))
                 let mediaTime = Int64(Int32(bitPattern: data.readUInt32BE(at: pos + 4)))
                 let rateInt = Int16(bitPattern: data.readUInt16BE(at: pos + 8))
@@ -283,7 +286,7 @@ struct ISOBMFFInspector: ContainerInspector {
                 entries.append(EditListEntry(segmentDuration: duration, mediaTime: mediaTime, mediaRateInteger: rateInt, mediaRateFraction: rateFrac))
                 pos += 12
             } else {
-                guard pos + 20 <= box.offset + box.size else { break }
+                guard pos + 20 <= boxEnd else { break }
                 let duration = Int64(bitPattern: data.readUInt64BE(at: pos))
                 let mediaTime = Int64(bitPattern: data.readUInt64BE(at: pos + 8))
                 let rateInt = Int16(bitPattern: data.readUInt16BE(at: pos + 16))
@@ -300,16 +303,17 @@ struct ISOBMFFInspector: ContainerInspector {
     private func parseSTSS(data: Data, stblChildren: [BoxInfo]) -> [UInt32] {
         guard let stss = stblChildren.first(where: { $0.type == "stss" }) else { return [] }
         let bodyStart = stss.offset + 8
-        guard bodyStart + 8 <= stss.offset + stss.size else { return [] }
+        let stssEnd = min(stss.offset + stss.size, UInt64(data.count))
+        guard bodyStart + 8 <= stssEnd else { return [] }
 
         // version(1) + flags(3) + entry_count(4)
         let entryCount = data.readUInt32BE(at: bodyStart + 4)
         var samples: [UInt32] = []
-        samples.reserveCapacity(Int(entryCount))
+        samples.reserveCapacity(Int(min(entryCount, 1_000_000)))
         var pos = bodyStart + 8
 
         for _ in 0..<entryCount {
-            guard pos + 4 <= stss.offset + stss.size else { break }
+            guard pos + 4 <= stssEnd else { break }
             samples.append(data.readUInt32BE(at: pos))
             pos += 4
         }
@@ -322,14 +326,15 @@ struct ISOBMFFInspector: ContainerInspector {
     private func parseSTTS(data: Data, stblChildren: [BoxInfo]) -> [(count: UInt32, delta: UInt32)] {
         guard let stts = stblChildren.first(where: { $0.type == "stts" }) else { return [] }
         let bodyStart = stts.offset + 8
-        guard bodyStart + 8 <= stts.offset + stts.size else { return [] }
+        let sttsEnd = min(stts.offset + stts.size, UInt64(data.count))
+        guard bodyStart + 8 <= sttsEnd else { return [] }
 
         let entryCount = data.readUInt32BE(at: bodyStart + 4)
         var entries: [(count: UInt32, delta: UInt32)] = []
         var pos = bodyStart + 8
 
         for _ in 0..<entryCount {
-            guard pos + 8 <= stts.offset + stts.size else { break }
+            guard pos + 8 <= sttsEnd else { break }
             let count = data.readUInt32BE(at: pos)
             let delta = data.readUInt32BE(at: pos + 4)
             entries.append((count: count, delta: delta))
@@ -344,7 +349,8 @@ struct ISOBMFFInspector: ContainerInspector {
     private func parseCTTS(data: Data, stblChildren: [BoxInfo]) -> [(count: UInt32, offset: Int32)] {
         guard let ctts = stblChildren.first(where: { $0.type == "ctts" }) else { return [] }
         let bodyStart = ctts.offset + 8
-        guard bodyStart + 8 <= ctts.offset + ctts.size else { return [] }
+        let cttsEnd = min(ctts.offset + ctts.size, UInt64(data.count))
+        guard bodyStart + 8 <= cttsEnd else { return [] }
 
         let version = data[Int(bodyStart)]
         let entryCount = data.readUInt32BE(at: bodyStart + 4)
@@ -352,7 +358,7 @@ struct ISOBMFFInspector: ContainerInspector {
         var pos = bodyStart + 8
 
         for _ in 0..<entryCount {
-            guard pos + 8 <= ctts.offset + ctts.size else { break }
+            guard pos + 8 <= cttsEnd else { break }
             let count = data.readUInt32BE(at: pos)
             let offset: Int32
             if version == 0 {
@@ -373,15 +379,17 @@ struct ISOBMFFInspector: ContainerInspector {
     private func parseMediaTimescale(data: Data, mdiaChildren: [BoxInfo]) -> UInt32 {
         guard let mdhd = mdiaChildren.first(where: { $0.type == "mdhd" }) else { return 0 }
         let bodyStart = mdhd.offset + 8
+        let mdhdEnd = min(mdhd.offset + mdhd.size, UInt64(data.count))
+        guard bodyStart < mdhdEnd else { return 0 }
         let version = data[Int(bodyStart)]
 
         if version == 0 {
             // version 0: skip version(1)+flags(3)+creation(4)+modification(4) = 12, then timescale(4)
-            guard bodyStart + 16 <= mdhd.offset + mdhd.size else { return 0 }
+            guard bodyStart + 16 <= mdhdEnd else { return 0 }
             return data.readUInt32BE(at: bodyStart + 12)
         } else {
             // version 1: skip version(1)+flags(3)+creation(8)+modification(8) = 20, then timescale(4)
-            guard bodyStart + 24 <= mdhd.offset + mdhd.size else { return 0 }
+            guard bodyStart + 24 <= mdhdEnd else { return 0 }
             return data.readUInt32BE(at: bodyStart + 20)
         }
     }
@@ -395,7 +403,8 @@ struct ISOBMFFInspector: ContainerInspector {
 
         let bodyStart = hdlr.offset + 8
         // version(1) + flags(3) + pre_defined(4) + handler_type(4)
-        guard bodyStart + 12 <= hdlr.offset + hdlr.size else { return false }
+        let hdlrEnd = min(hdlr.offset + hdlr.size, UInt64(data.count))
+        guard bodyStart + 12 <= hdlrEnd else { return false }
         let handlerType = String(data: data[Int(bodyStart + 8)..<Int(bodyStart + 12)], encoding: .ascii)
         return handlerType == "vide"
     }

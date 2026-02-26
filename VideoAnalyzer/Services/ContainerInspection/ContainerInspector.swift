@@ -1,5 +1,13 @@
 import Foundation
 
+// MARK: - Inspection Depth
+
+enum InspectionDepth: Sendable {
+    case quick      // Box structure + index table consistency only (no NAL parsing)
+    case standard   // + NAL sampling (~50 frames, keyframes prioritized)
+    case thorough   // + NAL check on all keyframes + every 10th frame (no upper cap)
+}
+
 // MARK: - Protocol
 
 protocol ContainerInspector: Sendable {
@@ -10,7 +18,14 @@ protocol ContainerInspector: Sendable {
     func canInspect(url: URL) -> Bool
 
     /// Run container-level inspection, returning diagnostics
-    func inspect(url: URL) async throws -> ContainerReport
+    func inspect(url: URL, depth: InspectionDepth) async throws -> ContainerReport
+}
+
+extension ContainerInspector {
+    /// Default convenience — runs at `.standard` depth.
+    func inspect(url: URL) async throws -> ContainerReport {
+        try await inspect(url: url, depth: .standard)
+    }
 }
 
 // MARK: - Report
@@ -61,6 +76,7 @@ struct ContainerDiagnostic: Identifiable, Sendable {
     let detail: String
     let byteOffset: UInt64?
     let remediation: Remediation
+    let playerNotes: String?
 
     init(
         id: UUID = UUID(),
@@ -69,7 +85,8 @@ struct ContainerDiagnostic: Identifiable, Sendable {
         title: String,
         detail: String,
         byteOffset: UInt64? = nil,
-        remediation: Remediation = .none
+        remediation: Remediation = .none,
+        playerNotes: String? = nil
     ) {
         self.id = id
         self.category = category
@@ -78,6 +95,7 @@ struct ContainerDiagnostic: Identifiable, Sendable {
         self.detail = detail
         self.byteOffset = byteOffset
         self.remediation = remediation
+        self.playerNotes = playerNotes
     }
 }
 
@@ -88,6 +106,8 @@ enum DiagnosticCategory: String, Sendable {
     case boxStructure       // malformed or overlapping boxes
     case truncatedAtom      // atom extends past EOF
     case missingAtom        // required atom not present
+    case sampleTable        // stco/stsz/stsc cross-validation issues
+    case nalStructure       // NAL unit boundary / type issues
     case indexTable          // MXF index segment issues
     case partitionStructure  // MXF partition pack problems
     case essenceDescriptor   // MXF essence descriptor issues
@@ -158,7 +178,7 @@ extension ContainerDiagnostic {
         switch category {
         case .editList, .syncSampleTable, .compositionTime:
             issueType = .containerMetadata
-        case .boxStructure, .truncatedAtom, .missingAtom:
+        case .boxStructure, .truncatedAtom, .missingAtom, .sampleTable, .nalStructure:
             issueType = .containerStructure
         case .indexTable, .partitionStructure, .essenceDescriptor:
             issueType = .containerMetadata
@@ -173,6 +193,9 @@ extension ContainerDiagnostic {
             desc += " [Fixable by remux]"
         } else if remediation == .reencode {
             desc += " [Requires re-encode to fix]"
+        }
+        if let notes = playerNotes {
+            desc += " [\(notes)]"
         }
 
         return MediaIssue(

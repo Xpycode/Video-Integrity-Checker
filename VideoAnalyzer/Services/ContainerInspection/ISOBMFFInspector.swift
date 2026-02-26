@@ -17,7 +17,7 @@ struct ISOBMFFInspector: ContainerInspector {
         return header.count >= 8 && String(data: header[4..<8], encoding: .ascii) == "ftyp"
     }
 
-    func inspect(url: URL) async throws -> ContainerReport {
+    func inspect(url: URL, depth: InspectionDepth) async throws -> ContainerReport {
         let data = try Data(contentsOf: url, options: .mappedIfSafe)
         let fileSize = UInt64(data.count)
         var issues: [ContainerDiagnostic] = []
@@ -93,6 +93,11 @@ struct ISOBMFFInspector: ContainerInspector {
                             // Parse ctts (composition time offsets)
                             let compositionOffsets = parseCTTS(data: data, stblChildren: stblChildren)
 
+                            // Parse sample table index tables
+                            let chunkOffsets = parseSTCO(data: data, stblChildren: stblChildren)
+                            let sampleToChunk = parseSTSC(data: data, stblChildren: stblChildren)
+                            let sampleSizes = parseSTSZ(data: data, stblChildren: stblChildren)
+
                             // Validate edit list against keyframes
                             if let editListInfo = editLists.first(where: { $0.trackIndex == trackIndex }) {
                                 issues.append(contentsOf: validateEditList(
@@ -105,8 +110,40 @@ struct ISOBMFFInspector: ContainerInspector {
                                 ))
                             }
 
+                            // Cross-validate sample tables for video tracks
+                            let isVideo = isVideoTrack(data: data, trakChildren: trakChildren)
+                            if isVideo {
+                                let mdatBox = topBoxes.first(where: { $0.type == "mdat" })
+                                issues.append(contentsOf: validateSampleTables(
+                                    chunkOffsets: chunkOffsets,
+                                    sampleToChunk: sampleToChunk,
+                                    sampleSizes: sampleSizes,
+                                    keyframes: keyframes,
+                                    sampleTimes: sampleTimes,
+                                    mdatBox: mdatBox,
+                                    fileSize: fileSize,
+                                    trackIndex: trackIndex
+                                ))
+                            }
+
+                            // NAL unit boundary validation (Wave 2)
+                            if isVideo && depth != .quick {
+                                if let codecConfig = parseCodecConfig(data: data, stblChildren: stblChildren) {
+                                    issues.append(contentsOf: validateNALBoundaries(
+                                        data: data,
+                                        chunkOffsets: chunkOffsets,
+                                        sampleToChunk: sampleToChunk,
+                                        sampleSizes: sampleSizes,
+                                        keyframes: keyframes,
+                                        codecConfig: codecConfig,
+                                        depth: depth,
+                                        trackIndex: trackIndex
+                                    ))
+                                }
+                            }
+
                             // Validate stss presence for video tracks
-                            if isVideoTrack(data: data, trakChildren: trakChildren) && keyframes.isEmpty {
+                            if isVideo && keyframes.isEmpty {
                                 let stssExists = stblChildren.contains { $0.type == "stss" }
                                 if !stssExists {
                                     // No stss = every frame is a sync sample (all-intra). That's fine.
@@ -116,7 +153,8 @@ struct ISOBMFFInspector: ContainerInspector {
                                         severity: .warning,
                                         title: "Empty Sync Sample Table",
                                         detail: "Track \(trackIndex) has an stss atom with no keyframes. Seeking will be unreliable.",
-                                        remediation: .remux
+                                        remediation: .remux,
+                                        playerNotes: "Seeking broken in all players; sequential playback may still work"
                                     ))
                                 }
                             }
@@ -372,6 +410,597 @@ struct ISOBMFFInspector: ContainerInspector {
             pos += 8
         }
         return entries
+    }
+
+    // MARK: - stco / co64 (Chunk Offset Table)
+
+    /// Parse chunk offsets from stco (32-bit) or co64 (64-bit).
+    /// Returns absolute file offsets of each chunk.
+    private func parseSTCO(data: Data, stblChildren: [BoxInfo]) -> [UInt64] {
+        // Prefer co64 for large files
+        if let co64 = stblChildren.first(where: { $0.type == "co64" }) {
+            return parseChunkOffsets64(data: data, box: co64)
+        }
+        if let stco = stblChildren.first(where: { $0.type == "stco" }) {
+            return parseChunkOffsets32(data: data, box: stco)
+        }
+        return []
+    }
+
+    private func parseChunkOffsets32(data: Data, box: BoxInfo) -> [UInt64] {
+        let bodyStart = box.offset + 8
+        let boxEnd = min(box.offset + box.size, UInt64(data.count))
+        guard bodyStart + 8 <= boxEnd else { return [] }
+
+        let entryCount = data.readUInt32BE(at: bodyStart + 4)
+        var offsets: [UInt64] = []
+        offsets.reserveCapacity(Int(min(entryCount, 1_000_000)))
+        var pos = bodyStart + 8
+
+        for _ in 0..<entryCount {
+            guard pos + 4 <= boxEnd else { break }
+            offsets.append(UInt64(data.readUInt32BE(at: pos)))
+            pos += 4
+        }
+        return offsets
+    }
+
+    private func parseChunkOffsets64(data: Data, box: BoxInfo) -> [UInt64] {
+        let bodyStart = box.offset + 8
+        let boxEnd = min(box.offset + box.size, UInt64(data.count))
+        guard bodyStart + 8 <= boxEnd else { return [] }
+
+        let entryCount = data.readUInt32BE(at: bodyStart + 4)
+        var offsets: [UInt64] = []
+        offsets.reserveCapacity(Int(min(entryCount, 1_000_000)))
+        var pos = bodyStart + 8
+
+        for _ in 0..<entryCount {
+            guard pos + 8 <= boxEnd else { break }
+            offsets.append(data.readUInt64BE(at: pos))
+            pos += 8
+        }
+        return offsets
+    }
+
+    // MARK: - stsc (Sample-to-Chunk Table)
+
+    private struct SampleToChunkEntry {
+        let firstChunk: UInt32
+        let samplesPerChunk: UInt32
+        let sampleDescIndex: UInt32
+    }
+
+    private func parseSTSC(data: Data, stblChildren: [BoxInfo]) -> [SampleToChunkEntry] {
+        guard let stsc = stblChildren.first(where: { $0.type == "stsc" }) else { return [] }
+        let bodyStart = stsc.offset + 8
+        let boxEnd = min(stsc.offset + stsc.size, UInt64(data.count))
+        guard bodyStart + 8 <= boxEnd else { return [] }
+
+        let entryCount = data.readUInt32BE(at: bodyStart + 4)
+        var entries: [SampleToChunkEntry] = []
+        entries.reserveCapacity(Int(min(entryCount, 1_000_000)))
+        var pos = bodyStart + 8
+
+        for _ in 0..<entryCount {
+            guard pos + 12 <= boxEnd else { break }
+            entries.append(SampleToChunkEntry(
+                firstChunk: data.readUInt32BE(at: pos),
+                samplesPerChunk: data.readUInt32BE(at: pos + 4),
+                sampleDescIndex: data.readUInt32BE(at: pos + 8)
+            ))
+            pos += 12
+        }
+        return entries
+    }
+
+    // MARK: - stsz (Sample Size Table)
+
+    private struct SampleSizeInfo {
+        let uniformSize: UInt32     // If > 0, all samples are this size
+        let sizes: [UInt32]         // Per-sample sizes (empty if uniformSize > 0)
+        var sampleCount: UInt32 {
+            uniformSize > 0 ? UInt32(sizes.count == 0 ? 0 : UInt32(sizes.count)) : UInt32(sizes.count)
+        }
+    }
+
+    private func parseSTSZ(data: Data, stblChildren: [BoxInfo]) -> SampleSizeInfo {
+        guard let stsz = stblChildren.first(where: { $0.type == "stsz" }) else {
+            return SampleSizeInfo(uniformSize: 0, sizes: [])
+        }
+        let bodyStart = stsz.offset + 8
+        let boxEnd = min(stsz.offset + stsz.size, UInt64(data.count))
+        guard bodyStart + 12 <= boxEnd else { return SampleSizeInfo(uniformSize: 0, sizes: []) }
+
+        // version(1) + flags(3) + sample_size(4) + sample_count(4)
+        let uniformSize = data.readUInt32BE(at: bodyStart + 4)
+        let sampleCount = data.readUInt32BE(at: bodyStart + 8)
+
+        if uniformSize > 0 {
+            // All samples are the same size — no per-sample table
+            return SampleSizeInfo(uniformSize: uniformSize, sizes: Array(repeating: uniformSize, count: Int(min(sampleCount, 10_000_000))))
+        }
+
+        var sizes: [UInt32] = []
+        sizes.reserveCapacity(Int(min(sampleCount, 10_000_000)))
+        var pos = bodyStart + 12
+
+        for _ in 0..<sampleCount {
+            guard pos + 4 <= boxEnd else { break }
+            sizes.append(data.readUInt32BE(at: pos))
+            pos += 4
+        }
+        return SampleSizeInfo(uniformSize: 0, sizes: sizes)
+    }
+
+    // MARK: - Sample Table Cross-Validation
+
+    private func validateSampleTables(
+        chunkOffsets: [UInt64],
+        sampleToChunk: [SampleToChunkEntry],
+        sampleSizes: SampleSizeInfo,
+        keyframes: [UInt32],
+        sampleTimes: [(count: UInt32, delta: UInt32)],
+        mdatBox: BoxInfo?,
+        fileSize: UInt64,
+        trackIndex: Int
+    ) -> [ContainerDiagnostic] {
+        var issues: [ContainerDiagnostic] = []
+        let totalSampleCount = sampleTimes.reduce(UInt64(0)) { $0 + UInt64($1.count) }
+
+        // ── Check 1: stco offsets within mdat bounds ─────────────────────
+        if let mdat = mdatBox {
+            let mdatDataStart = mdat.offset + 8  // 8-byte header (size + type)
+            let mdatEnd = mdat.offset + mdat.size
+            var outOfBounds = 0
+            var borderline = 0
+            let borderlineThreshold = mdatEnd - (mdat.size / 100) // last 1%
+
+            for offset in chunkOffsets {
+                if offset < mdatDataStart || offset >= mdatEnd {
+                    outOfBounds += 1
+                } else if offset >= borderlineThreshold {
+                    borderline += 1
+                }
+            }
+
+            if outOfBounds > 0 {
+                issues.append(ContainerDiagnostic(
+                    category: .sampleTable,
+                    severity: .error,
+                    title: "Chunk Offsets Outside mdat",
+                    detail: "Track \(trackIndex): \(outOfBounds) of \(chunkOffsets.count) chunk offsets point outside the mdat atom. File is truncated or index is corrupt.",
+                    remediation: .reencode,
+                    playerNotes: "VLC may still play (high tolerance); QuickTime and AVFoundation will fail"
+                ))
+            } else if borderline > 0 {
+                issues.append(ContainerDiagnostic(
+                    category: .sampleTable,
+                    severity: .warning,
+                    title: "Chunk Offsets Near mdat Boundary",
+                    detail: "Track \(trackIndex): \(borderline) chunk offsets are in the last 1% of mdat. File may be borderline truncated.",
+                    remediation: .reencode
+                ))
+            }
+        }
+
+        // ── Check 2: stss indices within sample count ────────────────────
+        if totalSampleCount > 0 {
+            let outOfRange = keyframes.filter { $0 < 1 || UInt64($0) > totalSampleCount }
+            if !outOfRange.isEmpty {
+                issues.append(ContainerDiagnostic(
+                    category: .syncSampleTable,
+                    severity: .error,
+                    title: "Invalid Keyframe Indices",
+                    detail: "Track \(trackIndex): \(outOfRange.count) sync sample entries reference samples outside valid range (1–\(totalSampleCount)).",
+                    remediation: .reencode
+                ))
+            }
+        }
+
+        // ── Check 3: Total sample data fits within mdat ──────────────────
+        if let mdat = mdatBox {
+            let mdatPayload = mdat.size >= 8 ? mdat.size - 8 : 0
+            let totalSampleBytes: UInt64
+            if sampleSizes.uniformSize > 0 {
+                totalSampleBytes = UInt64(sampleSizes.uniformSize) * totalSampleCount
+            } else {
+                totalSampleBytes = sampleSizes.sizes.reduce(UInt64(0)) { $0 + UInt64($1) }
+            }
+
+            if totalSampleBytes > mdatPayload && mdatPayload > 0 {
+                issues.append(ContainerDiagnostic(
+                    category: .sampleTable,
+                    severity: .error,
+                    title: "Sample Sizes Exceed Media Data",
+                    detail: "Track \(trackIndex): sample table declares \(totalSampleBytes) bytes of samples but mdat contains only \(mdatPayload) bytes. File is truncated.",
+                    remediation: .reencode,
+                    playerNotes: "VLC may still play (high tolerance); QuickTime and AVFoundation will fail"
+                ))
+            }
+        }
+
+        // ── Check 4: First video sample is a keyframe ────────────────────
+        if !keyframes.isEmpty && !keyframes.contains(1) {
+            issues.append(ContainerDiagnostic(
+                category: .syncSampleTable,
+                severity: .warning,
+                title: "First Frame Not a Keyframe",
+                detail: "Track \(trackIndex): sample 1 is not in the sync sample table. Playback may start with artifacts.",
+                remediation: .remux,
+                playerNotes: "AVFoundation shows green/black frames until first keyframe; VLC and mpv recover faster"
+            ))
+        }
+
+        // ── Check 5: Zero-size video samples ─────────────────────────────
+        if sampleSizes.uniformSize == 0 {
+            let zeroCount = sampleSizes.sizes.filter { $0 == 0 }.count
+            if zeroCount > 0 {
+                issues.append(ContainerDiagnostic(
+                    category: .sampleTable,
+                    severity: .warning,
+                    title: "Zero-Size Samples Detected",
+                    detail: "Track \(trackIndex): \(zeroCount) video samples have size 0. These may represent dropped frames or encoding errors."
+                ))
+            }
+        }
+
+        // ── Check 6: Chunk offset ordering ───────────────────────────────
+        if chunkOffsets.count > 1 {
+            var outOfOrder = 0
+            for i in 1..<chunkOffsets.count {
+                if chunkOffsets[i] <= chunkOffsets[i - 1] {
+                    outOfOrder += 1
+                }
+            }
+            if outOfOrder > 0 {
+                issues.append(ContainerDiagnostic(
+                    category: .sampleTable,
+                    severity: .warning,
+                    title: "Non-Monotonic Chunk Offsets",
+                    detail: "Track \(trackIndex): \(outOfOrder) chunk offsets are out of order. File may have been incorrectly muxed.",
+                    remediation: .remux,
+                    playerNotes: "Some players recover with sequential scan; seeking will be incorrect"
+                ))
+            }
+        }
+
+        return issues
+    }
+
+    // MARK: - Codec Config (avcC / hvcC)
+
+    private enum VideoCodecType { case h264, h265, other }
+
+    private struct CodecConfig {
+        let codecType: VideoCodecType
+        let nalLengthSize: Int  // 1, 2, or 4 bytes
+    }
+
+    /// Extract NAL length size from the avcC or hvcC box within stsd.
+    private func parseCodecConfig(data: Data, stblChildren: [BoxInfo]) -> CodecConfig? {
+        guard let stsd = stblChildren.first(where: { $0.type == "stsd" }) else { return nil }
+        let bodyStart = stsd.offset + 8
+        let stsdEnd = min(stsd.offset + stsd.size, UInt64(data.count))
+        // stsd: version(1) + flags(3) + entry_count(4) + first sample entry
+        guard bodyStart + 16 <= stsdEnd else { return nil }
+
+        // First sample entry starts at bodyStart + 8
+        let entryStart = bodyStart + 8
+        guard entryStart + 8 <= stsdEnd else { return nil }
+        let entrySize = UInt64(data.readUInt32BE(at: entryStart))
+        let entryEnd = min(entryStart + entrySize, stsdEnd)
+
+        // Video sample entry: 8-byte header + 70 bytes fixed fields = 78 bytes before child boxes
+        guard entryStart + 78 <= entryEnd else { return nil }
+
+        // Scan child boxes within the sample entry (after the 78-byte fixed header)
+        let childrenStart = entryStart + 78
+        var pos = childrenStart
+        while pos + 8 <= entryEnd {
+            let boxSize = UInt64(data.readUInt32BE(at: pos))
+            guard boxSize >= 8, pos + boxSize <= entryEnd else { break }
+            let typeBytes = data[Int(pos + 4)..<Int(pos + 8)]
+            let type = String(data: typeBytes, encoding: .ascii) ?? ""
+
+            if type == "avcC" {
+                // avcC: configurationVersion(1) + profile(1) + compat(1) + level(1) + lengthSizeMinusOne(1)
+                let configStart = pos + 8
+                guard configStart + 5 <= pos + boxSize else { break }
+                let lengthSizeMinusOne = Int(data[Int(configStart + 4)] & 0x03)
+                return CodecConfig(codecType: .h264, nalLengthSize: lengthSizeMinusOne + 1)
+            }
+
+            if type == "hvcC" {
+                // hvcC: many fields... lengthSizeMinusOne is at byte 21
+                let configStart = pos + 8
+                guard configStart + 22 <= pos + boxSize else { break }
+                let lengthSizeMinusOne = Int(data[Int(configStart + 21)] & 0x03)
+                return CodecConfig(codecType: .h265, nalLengthSize: lengthSizeMinusOne + 1)
+            }
+
+            pos += boxSize
+        }
+
+        return nil
+    }
+
+    // MARK: - NAL Unit Boundary Validation
+
+    /// Build a flat list of (fileOffset, size) for each sample, using stco + stsc + stsz.
+    private func buildFrameMap(
+        chunkOffsets: [UInt64],
+        sampleToChunk: [SampleToChunkEntry],
+        sampleSizes: SampleSizeInfo
+    ) -> [(offset: UInt64, size: UInt32)] {
+        guard !chunkOffsets.isEmpty, !sampleToChunk.isEmpty else { return [] }
+
+        var frames: [(offset: UInt64, size: UInt32)] = []
+        frames.reserveCapacity(sampleSizes.sizes.count)
+        var sampleIndex = 0
+
+        for chunkIndex in 0..<chunkOffsets.count {
+            let chunk1Based = UInt32(chunkIndex + 1)
+
+            // Find the stsc entry that applies to this chunk
+            var samplesInChunk: UInt32 = 0
+            for i in (0..<sampleToChunk.count).reversed() {
+                if sampleToChunk[i].firstChunk <= chunk1Based {
+                    samplesInChunk = sampleToChunk[i].samplesPerChunk
+                    break
+                }
+            }
+
+            var chunkPos = chunkOffsets[chunkIndex]
+            for _ in 0..<samplesInChunk {
+                guard sampleIndex < sampleSizes.sizes.count else { return frames }
+                let size = sampleSizes.sizes[sampleIndex]
+                frames.append((offset: chunkPos, size: size))
+                chunkPos += UInt64(size)
+                sampleIndex += 1
+            }
+        }
+
+        return frames
+    }
+
+    /// Select which frame indices to check based on inspection depth.
+    private func selectFramesToCheck(
+        totalFrames: Int,
+        keyframes: [UInt32],
+        depth: InspectionDepth
+    ) -> Set<Int> {
+        guard totalFrames > 0 else { return [] }
+        var indices = Set<Int>()
+
+        switch depth {
+        case .quick:
+            return []  // No NAL validation at quick depth
+
+        case .standard:
+            // First 5 frames
+            for i in 0..<min(5, totalFrames) {
+                indices.insert(i)
+            }
+            // All keyframes (capped at 50)
+            for kf in keyframes.prefix(50) {
+                let idx = Int(kf) - 1  // 1-based to 0-based
+                if idx >= 0 && idx < totalFrames { indices.insert(idx) }
+            }
+            // ~50 evenly spaced frames
+            if totalFrames > 50 {
+                let stride = max(1, totalFrames / 50)
+                var i = 0
+                while i < totalFrames {
+                    indices.insert(i)
+                    i += stride
+                }
+            }
+            // Cap at 200
+            if indices.count > 200 {
+                indices = Set(indices.sorted().prefix(200))
+            }
+
+        case .thorough:
+            // All keyframes (no cap)
+            for kf in keyframes {
+                let idx = Int(kf) - 1
+                if idx >= 0 && idx < totalFrames { indices.insert(idx) }
+            }
+            // Every 10th frame
+            var i = 0
+            while i < totalFrames {
+                indices.insert(i)
+                i += 10
+            }
+        }
+
+        return indices
+    }
+
+    /// Validate NAL unit structure within sampled video frames.
+    private func validateNALBoundaries(
+        data: Data,
+        chunkOffsets: [UInt64],
+        sampleToChunk: [SampleToChunkEntry],
+        sampleSizes: SampleSizeInfo,
+        keyframes: [UInt32],
+        codecConfig: CodecConfig,
+        depth: InspectionDepth,
+        trackIndex: Int
+    ) -> [ContainerDiagnostic] {
+        var issues: [ContainerDiagnostic] = []
+        let frameMap = buildFrameMap(chunkOffsets: chunkOffsets, sampleToChunk: sampleToChunk, sampleSizes: sampleSizes)
+        guard !frameMap.isEmpty else { return [] }
+
+        let framesToCheck = selectFramesToCheck(totalFrames: frameMap.count, keyframes: keyframes, depth: depth)
+        guard !framesToCheck.isEmpty else { return [] }
+
+        let nalLenSize = codecConfig.nalLengthSize
+        let keyframeSet = Set(keyframes.map { Int($0) - 1 }) // 0-based
+        var nalOverflowCount = 0
+        var frameMismatchCount = 0
+        var missingIDRKeyframes = 0
+        var firstNALOverflowByte: UInt64?
+
+        // Check first sample for IDR
+        if let firstFrame = frameMap.first,
+           firstFrame.size > 0,
+           Int(firstFrame.offset) + Int(firstFrame.size) <= data.count {
+            let hasIDR = checkForIDR(data: data, frameOffset: firstFrame.offset, frameSize: firstFrame.size, nalLenSize: nalLenSize, codec: codecConfig.codecType)
+            if !hasIDR {
+                issues.append(ContainerDiagnostic(
+                    category: .nalStructure,
+                    severity: .warning,
+                    title: "First Frame Not IDR",
+                    detail: "Track \(trackIndex): first video frame does not contain an IDR NAL unit. Playback requires random access point.",
+                    playerNotes: "AVFoundation shows green/black frames until first keyframe; VLC and mpv recover faster"
+                ))
+            }
+        }
+
+        for frameIdx in framesToCheck.sorted() {
+            guard frameIdx < frameMap.count else { continue }
+            let frame = frameMap[frameIdx]
+            guard frame.size > 0 else { continue }
+            let frameEnd = frame.offset + UInt64(frame.size)
+            guard Int(frameEnd) <= data.count else { continue }
+
+            // Walk NAL units within this frame
+            var pos = frame.offset
+            var frameHasIDR = false
+
+            while pos < frameEnd {
+                let remaining = frameEnd - pos
+                guard remaining >= UInt64(nalLenSize) else {
+                    // Leftover bytes less than NAL length field
+                    if remaining > 0 && remaining >= 4 {
+                        frameMismatchCount += 1
+                    }
+                    break
+                }
+
+                // Read NAL length (big-endian)
+                let nalLength: UInt64
+                switch nalLenSize {
+                case 4:
+                    nalLength = UInt64(data.readUInt32BE(at: pos))
+                case 2:
+                    nalLength = UInt64(data.readUInt16BE(at: pos))
+                case 1:
+                    nalLength = UInt64(data[Int(pos)])
+                default:
+                    nalLength = UInt64(data.readUInt32BE(at: pos))
+                }
+
+                let nalStart = pos + UInt64(nalLenSize)
+                let nalEnd = nalStart + nalLength
+
+                // Check: NAL length overflow
+                if nalLength == 0 || nalEnd > frameEnd {
+                    nalOverflowCount += 1
+                    if firstNALOverflowByte == nil { firstNALOverflowByte = pos }
+                    break // Can't continue walking this frame
+                }
+
+                // Check NAL type for IDR detection
+                if nalStart < UInt64(data.count) {
+                    let nalHeader = data[Int(nalStart)]
+                    switch codecConfig.codecType {
+                    case .h264:
+                        let nalType = nalHeader & 0x1F
+                        if nalType == 5 { frameHasIDR = true }
+                    case .h265:
+                        let nalType = (nalHeader >> 1) & 0x3F
+                        if nalType >= 16 && nalType <= 21 { frameHasIDR = true }
+                    case .other:
+                        break
+                    }
+                }
+
+                pos = nalEnd
+            }
+
+            // Check frame end alignment
+            if pos != frameEnd && pos < frameEnd {
+                let leftover = frameEnd - pos
+                if leftover >= 4 {
+                    frameMismatchCount += 1
+                }
+            }
+
+            // Check: keyframe should contain IDR
+            if keyframeSet.contains(frameIdx) && !frameHasIDR && codecConfig.codecType == .h264 {
+                missingIDRKeyframes += 1
+            }
+        }
+
+        // Emit diagnostics
+        if nalOverflowCount > 0 {
+            issues.append(ContainerDiagnostic(
+                category: .nalStructure,
+                severity: .error,
+                title: "NAL Unit Length Overflow",
+                detail: "Track \(trackIndex): \(nalOverflowCount) frames have NAL units whose declared length exceeds frame boundaries.",
+                byteOffset: firstNALOverflowByte,
+                remediation: .reencode,
+                playerNotes: "Most players skip corrupted frames; artifacts may cascade until next keyframe"
+            ))
+        }
+
+        if frameMismatchCount > 0 {
+            issues.append(ContainerDiagnostic(
+                category: .nalStructure,
+                severity: .warning,
+                title: "Frame Size Mismatch",
+                detail: "Track \(trackIndex): \(frameMismatchCount) frames have leftover bytes after parsing all NAL units."
+            ))
+        }
+
+        if missingIDRKeyframes > 0 {
+            issues.append(ContainerDiagnostic(
+                category: .nalStructure,
+                severity: .warning,
+                title: "Keyframes Missing IDR NAL",
+                detail: "Track \(trackIndex): \(missingIDRKeyframes) keyframes (per stss) contain no IDR NAL unit.",
+                playerNotes: "AVFoundation shows green/black frames until first keyframe; VLC and mpv recover faster"
+            ))
+        }
+
+        return issues
+    }
+
+    /// Check if a frame contains an IDR NAL unit.
+    private func checkForIDR(data: Data, frameOffset: UInt64, frameSize: UInt32, nalLenSize: Int, codec: VideoCodecType) -> Bool {
+        var pos = frameOffset
+        let frameEnd = frameOffset + UInt64(frameSize)
+
+        while pos + UInt64(nalLenSize) <= frameEnd {
+            let nalLength: UInt64
+            switch nalLenSize {
+            case 4:  nalLength = UInt64(data.readUInt32BE(at: pos))
+            case 2:  nalLength = UInt64(data.readUInt16BE(at: pos))
+            case 1:  nalLength = UInt64(data[Int(pos)])
+            default: nalLength = UInt64(data.readUInt32BE(at: pos))
+            }
+
+            let nalStart = pos + UInt64(nalLenSize)
+            guard nalLength > 0, nalStart + nalLength <= frameEnd, nalStart < UInt64(data.count) else { break }
+
+            let nalHeader = data[Int(nalStart)]
+            switch codec {
+            case .h264:
+                if nalHeader & 0x1F == 5 { return true }
+            case .h265:
+                let nalType = (nalHeader >> 1) & 0x3F
+                if nalType >= 16 && nalType <= 21 { return true }
+            case .other:
+                break
+            }
+
+            pos = nalStart + nalLength
+        }
+        return false
     }
 
     // MARK: - mdhd (Media Header) Timescale

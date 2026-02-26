@@ -32,8 +32,8 @@ struct ContainerInspectorRegistry: Sendable {
     }
 
     /// Run container inspection on a file, returning nil if no inspector matches.
-    static func inspect(url: URL) async throws -> ContainerReport? {
+    static func inspect(url: URL, depth: InspectionDepth = .standard) async throws -> ContainerReport? {
         guard let inspector = inspector(for: url) else { return nil }
-        return try await inspector.inspect(url: url)
+        return try await inspector.inspect(url: url, depth: depth)
     }
 }

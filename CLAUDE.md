@@ -18,17 +18,22 @@ Native macOS app that analyzes media files for errors, corruption, and integrity
 
 ## Project Structure
 ```
-VideoAnalyzer/
-├── App/                    # App entry point, window management
-├── Models/                 # Data models (AnalysisResult, MediaFile, etc.)
-├── Views/                  # SwiftUI views
-├── ViewModels/             # ObservableObject view models
-├── Services/               # Analysis engines
-│   ├── AVFoundationAnalyzer.swift
-│   ├── FFmpegAnalyzer.swift
-│   └── AnalysisCoordinator.swift
-├── Utilities/              # Helpers, extensions
-└── Resources/              # Assets, localizations
+VideoAnalyzer/                     ← Repo root
+├── 01_Project/                    ← All Xcode stuff
+│   ├── VideoAnalyzer/             ← Source code
+│   │   ├── App/                   # App entry point, window management
+│   │   ├── Models/                # Data models (AnalysisResult, MediaFile, etc.)
+│   │   ├── Views/                 # SwiftUI views
+│   │   ├── ViewModels/            # ObservableObject view models
+│   │   ├── Services/              # Analysis engines
+│   │   └── Resources/             # Assets, localizations
+│   ├── VideoAnalyzer.xcodeproj/
+│   └── project.yml                # XcodeGen config
+├── 02_Design/Exports/             ← Design files & exports
+├── 03_Screenshots/                ← App Store / promotional
+├── 04_Exports/                    ← Builds, DMGs (gitignored)
+├── docs/                          ← Directions documentation
+└── CLAUDE.md
 ```
 
 ## Directions

@@ -11,9 +11,9 @@
 ## Current Position
 - **Funnel:** build
 - **Phase:** implementation
-- **Focus:** MXF OP1a inspector, dual-engine cross-reference, Vision artifact detection
+- **Focus:** Test with real corrupt/MXF files, Tier 2 gaps (fMP4, MXF metadata depth), dual-engine cross-reference, unit tests
 - **Status:** in progress
-- **Last session:** 2026-02-25 (session 2)
+- **Last session:** 2026-02-26
 
 ## Funnel Progress
 
@@ -21,25 +21,25 @@
 |--------|--------|------|
 | **Define** | done | Interview done, spec reviewed |
 | **Plan** | done | Implementation plan created |
-| **Build** | active | Waves 1-5 complete + container inspection system |
+| **Build** | active | Waves 1-5 + ISOBMFF/MXF inspectors + enhanced validation (sample tables, NAL boundaries, MXF integrity) |
 
 ## Phase Progress
 ```
-[#################...] 85% - Core + container inspection done, MXF/Vision next
+[##################..] 92% - Core + ISOBMFF + MXF inspectors + Tier 1 validation done, dual-engine/fMP4/tests next
 ```
 
 | Phase | Status | Tasks |
 |-------|--------|-------|
 | Discovery | done | Architecture decided |
 | Planning | done | 6-wave implementation plan |
-| Implementation | **active** | Waves 1-5 complete (13/13) + container inspection (4 new files) |
-| Polish | pending | MXF inspector, dual-engine, Vision artifacts, unit tests |
+| Implementation | **active** | Waves 1-5 (13/13) + ISOBMFF + MXF inspectors + deep validation (sample tables, NAL, KLV, timing, SPS/PPS, box sizes, stco overflow) |
+| Polish | pending | Dual-engine cross-reference, Vision artifacts, unit tests |
 
 ## Readiness
 
 | Dimension | Status | Notes |
 |-----------|--------|-------|
-| Features | partial | Core analysis + ISOBMFF container inspection working. MXF stub ready. |
+| Features | partial | Core analysis + deep ISOBMFF/MXF inspection (sample tables, NAL boundaries, KLV integrity, timing tables, SPS/PPS validation, stco overflow, box size validation, player notes). Needs real corrupt/MXF test files. |
 | UI/Polish | partial | NavigationSplitView, toolbar, drop zone done |
 | Testing | — | No unit tests yet |
 | Docs | partial | Directions set up, CLAUDE.md current |
@@ -51,9 +51,11 @@
 - Detect user-installed ffmpeg (Homebrew) rather than bundling (avoids LGPL issues)
 - SwiftUI for UI, single-window app with drag-and-drop
 - Non-App Store distribution (direct download) for flexibility
-- Protocol-based container inspection: ISOBMFF (MP4/MOV), MXF (OP1a), MPEG-TS — extensible
+- Protocol-based container inspection: ISOBMFF (MP4/MOV), MXF OP1a, MPEG-TS stub — extensible
 - Container inspection as pre-pass before frame decode (root cause appears first)
 - Remediation tagging on diagnostics (remux vs re-encode vs informational)
+- InspectionDepth (quick/standard/thorough) controls validation scope vs speed tradeoff
+- Player-specific compatibility notes on diagnostics (VLC, QuickTime, AVFoundation, Avid, DaVinci Resolve)
 - This app is analysis-only; repair/remux is a separate app project
 
 ## Blockers

@@ -110,6 +110,15 @@ struct ISOBMFFInspector: ContainerInspector {
                                 ))
                             }
 
+                            // Validate timing tables (stts / ctts)
+                            issues.append(contentsOf: validateTimingTables(
+                                sampleTimes: sampleTimes,
+                                compositionOffsets: compositionOffsets,
+                                sampleSizes: sampleSizes,
+                                trackTimescale: trackTimescale,
+                                trackIndex: trackIndex
+                            ))
+
                             // Cross-validate sample tables for video tracks
                             let isVideo = isVideoTrack(data: data, trakChildren: trakChildren)
                             if isVideo {
@@ -120,8 +129,18 @@ struct ISOBMFFInspector: ContainerInspector {
                                     sampleSizes: sampleSizes,
                                     keyframes: keyframes,
                                     sampleTimes: sampleTimes,
+                                    stblChildren: stblChildren,
                                     mdatBox: mdatBox,
                                     fileSize: fileSize,
+                                    trackIndex: trackIndex
+                                ))
+                            }
+
+                            // SPS/PPS presence validation
+                            if isVideo {
+                                issues.append(contentsOf: validateParameterSets(
+                                    data: data,
+                                    stblChildren: stblChildren,
                                     trackIndex: trackIndex
                                 ))
                             }
@@ -283,6 +302,48 @@ struct ISOBMFFInspector: ContainerInspector {
                 detail: "Box sizes total \(totalCovered) bytes but file is only \(fileSize) bytes. File appears truncated.",
                 remediation: .reencode
             ))
+        }
+
+        // Check for invalid box sizes
+        for (idx, box) in boxes.enumerated() {
+            // Size < 8 is impossible (except size=0 meaning "to end" and size=1 meaning extended)
+            if box.size > 0 && box.size < 8 {
+                issues.append(ContainerDiagnostic(
+                    category: .boxStructure,
+                    severity: .error,
+                    title: "Invalid Box Size",
+                    detail: "Box '\(box.type)' at offset \(box.offset) has size \(box.size) — less than the 8-byte minimum header. Container is corrupt.",
+                    byteOffset: box.offset,
+                    remediation: .reencode,
+                    playerNotes: "Most players abort parsing at this point; all subsequent boxes are unreachable"
+                ))
+            }
+            // Size extends beyond file
+            if box.offset + box.size > fileSize && box.size != 0 {
+                issues.append(ContainerDiagnostic(
+                    category: .boxStructure,
+                    severity: .error,
+                    title: "Box Extends Beyond EOF",
+                    detail: "Box '\(box.type)' at offset \(box.offset) declares size \(box.size) but file is only \(fileSize) bytes. Box is truncated.",
+                    byteOffset: box.offset,
+                    remediation: .reencode
+                ))
+            }
+            // Overlapping: this box's range overlaps with the next
+            if idx + 1 < boxes.count {
+                let thisEnd = box.offset + box.size
+                let nextStart = boxes[idx + 1].offset
+                if thisEnd > nextStart {
+                    issues.append(ContainerDiagnostic(
+                        category: .boxStructure,
+                        severity: .error,
+                        title: "Overlapping Boxes",
+                        detail: "Box '\(box.type)' (offset \(box.offset), size \(box.size)) overlaps with '\(boxes[idx + 1].type)' at offset \(nextStart). File structure is corrupt.",
+                        byteOffset: box.offset,
+                        remediation: .reencode
+                    ))
+                }
+            }
         }
 
         // Check moov position (before or after mdat)
@@ -533,6 +594,107 @@ struct ISOBMFFInspector: ContainerInspector {
         return SampleSizeInfo(uniformSize: 0, sizes: sizes)
     }
 
+    // MARK: - Timing Table Validation (stts / ctts)
+
+    private func validateTimingTables(
+        sampleTimes: [(count: UInt32, delta: UInt32)],
+        compositionOffsets: [(count: UInt32, offset: Int32)],
+        sampleSizes: SampleSizeInfo,
+        trackTimescale: UInt32,
+        trackIndex: Int
+    ) -> [ContainerDiagnostic] {
+        var issues: [ContainerDiagnostic] = []
+        guard !sampleTimes.isEmpty else { return issues }
+
+        let sttsTotalSamples = sampleTimes.reduce(UInt64(0)) { $0 + UInt64($1.count) }
+
+        // ── stts Check 1: Zero deltas (non-monotonic DTS) ─────────────────
+        var zeroDeltas: UInt64 = 0
+        for entry in sampleTimes {
+            if entry.delta == 0 && entry.count > 0 {
+                zeroDeltas += UInt64(entry.count)
+            }
+        }
+        if zeroDeltas > 0 {
+            issues.append(ContainerDiagnostic(
+                category: .sampleTable,
+                severity: .warning,
+                title: "Zero Duration Samples in stts",
+                detail: "Track \(trackIndex): \(zeroDeltas) samples have delta=0 in the decode time table. These frames share the same DTS, causing non-monotonic decode timestamps.",
+                remediation: .remux,
+                playerNotes: "May cause A/V desync; ffmpeg warns 'non-monotonous DTS'; some players drop duplicates"
+            ))
+        }
+
+        // ── stts Check 2: Extremely large deltas ──────────────────────────
+        if trackTimescale > 0 {
+            let maxReasonableDelta = UInt32(trackTimescale * 10) // 10 seconds
+            for entry in sampleTimes {
+                if entry.delta > maxReasonableDelta && entry.count > 0 {
+                    let seconds = Double(entry.delta) / Double(trackTimescale)
+                    issues.append(ContainerDiagnostic(
+                        category: .sampleTable,
+                        severity: .warning,
+                        title: "Abnormal Frame Duration in stts",
+                        detail: "Track \(trackIndex): \(entry.count) samples have delta=\(entry.delta) (\(String(format: "%.1f", seconds))s per frame). This suggests corrupt timing data or a non-standard encoding.",
+                        remediation: .remux
+                    ))
+                    break // One diagnostic is enough
+                }
+            }
+        }
+
+        // ── stts Check 3: Sample count consistency with stsz ──────────────
+        let stszCount = UInt64(sampleSizes.sizes.count)
+        if stszCount > 0 && sttsTotalSamples > 0 && sttsTotalSamples != stszCount {
+            issues.append(ContainerDiagnostic(
+                category: .sampleTable,
+                severity: .error,
+                title: "Sample Count Mismatch (stts vs stsz)",
+                detail: "Track \(trackIndex): stts declares \(sttsTotalSamples) samples but stsz contains \(stszCount) entries. Sample table is inconsistent.",
+                remediation: .reencode,
+                playerNotes: "Most players use the smaller count; tail frames may be lost or garbled"
+            ))
+        }
+
+        // ── ctts Check 1: Total sample count matches stts ─────────────────
+        if !compositionOffsets.isEmpty {
+            let cttsTotalSamples = compositionOffsets.reduce(UInt64(0)) { $0 + UInt64($1.count) }
+            if cttsTotalSamples != sttsTotalSamples && sttsTotalSamples > 0 {
+                issues.append(ContainerDiagnostic(
+                    category: .compositionTime,
+                    severity: .warning,
+                    title: "Composition Offset Count Mismatch",
+                    detail: "Track \(trackIndex): ctts covers \(cttsTotalSamples) samples but stts declares \(sttsTotalSamples). Tail frames will have undefined presentation times.",
+                    remediation: .remux,
+                    playerNotes: "A/V desync worsens over playback; QuickTime may freeze near end"
+                ))
+            }
+
+            // ── ctts Check 2: Extreme composition offsets ─────────────────
+            if trackTimescale > 0 {
+                let maxReasonableOffset = Int32(trackTimescale * 5) // 5 seconds
+                var extremeCount = 0
+                for entry in compositionOffsets {
+                    if abs(entry.offset) > maxReasonableOffset {
+                        extremeCount += Int(entry.count)
+                    }
+                }
+                if extremeCount > 0 {
+                    issues.append(ContainerDiagnostic(
+                        category: .compositionTime,
+                        severity: .warning,
+                        title: "Extreme Composition Offsets in ctts",
+                        detail: "Track \(trackIndex): \(extremeCount) samples have composition offsets exceeding 5 seconds. This suggests corrupt ctts data or an unusual GOP structure.",
+                        remediation: .remux
+                    ))
+                }
+            }
+        }
+
+        return issues
+    }
+
     // MARK: - Sample Table Cross-Validation
 
     private func validateSampleTables(
@@ -541,12 +703,28 @@ struct ISOBMFFInspector: ContainerInspector {
         sampleSizes: SampleSizeInfo,
         keyframes: [UInt32],
         sampleTimes: [(count: UInt32, delta: UInt32)],
+        stblChildren: [BoxInfo],
         mdatBox: BoxInfo?,
         fileSize: UInt64,
         trackIndex: Int
     ) -> [ContainerDiagnostic] {
         var issues: [ContainerDiagnostic] = []
         let totalSampleCount = sampleTimes.reduce(UInt64(0)) { $0 + UInt64($1.count) }
+
+        // ── Check 0: stco overflow for >4GB files ─────────────────────────
+        let fourGB: UInt64 = 4_294_967_296
+        let usesStco = stblChildren.contains { $0.type == "stco" }
+        let usesCo64 = stblChildren.contains { $0.type == "co64" }
+        if fileSize > fourGB && usesStco && !usesCo64 {
+            issues.append(ContainerDiagnostic(
+                category: .sampleTable,
+                severity: .error,
+                title: "32-bit Chunk Offsets on >4GB File",
+                detail: "Track \(trackIndex): file is \(fileSize / (1024*1024))MB but uses 32-bit stco (max 4GB). Chunk offsets above 4GB will wrap around, making the second half of the video inaccessible.",
+                remediation: .remux,
+                playerNotes: "Playback fails or loops after ~4GB mark; remux with co64 support fixes this"
+            ))
+        }
 
         // ── Check 1: stco offsets within mdat bounds ─────────────────────
         if let mdat = mdatBox {
@@ -723,6 +901,180 @@ struct ISOBMFFInspector: ContainerInspector {
         }
 
         return nil
+    }
+
+    // MARK: - SPS/PPS Parameter Set Validation
+
+    /// Validate that avcC or hvcC contains required parameter sets (SPS, PPS, VPS).
+    private func validateParameterSets(
+        data: Data,
+        stblChildren: [BoxInfo],
+        trackIndex: Int
+    ) -> [ContainerDiagnostic] {
+        guard let stsd = stblChildren.first(where: { $0.type == "stsd" }) else { return [] }
+        let bodyStart = stsd.offset + 8
+        let stsdEnd = min(stsd.offset + stsd.size, UInt64(data.count))
+        guard bodyStart + 16 <= stsdEnd else { return [] }
+
+        let entryStart = bodyStart + 8
+        guard entryStart + 8 <= stsdEnd else { return [] }
+        let entrySize = UInt64(data.readUInt32BE(at: entryStart))
+        let entryEnd = min(entryStart + entrySize, stsdEnd)
+        guard entryStart + 78 <= entryEnd else { return [] }
+
+        // Scan child boxes within the video sample entry
+        var pos = entryStart + 78
+        while pos + 8 <= entryEnd {
+            let boxSize = UInt64(data.readUInt32BE(at: pos))
+            guard boxSize >= 8, pos + boxSize <= entryEnd else { break }
+            let typeBytes = data[Int(pos + 4)..<Int(pos + 8)]
+            let type = String(data: typeBytes, encoding: .ascii) ?? ""
+
+            if type == "avcC" {
+                return validateAvcC(data: data, boxStart: pos, boxSize: boxSize, trackIndex: trackIndex)
+            }
+            if type == "hvcC" {
+                return validateHvcC(data: data, boxStart: pos, boxSize: boxSize, trackIndex: trackIndex)
+            }
+            pos += boxSize
+        }
+        return []
+    }
+
+    /// Validate H.264 avcC: must contain at least 1 SPS and 1 PPS.
+    private func validateAvcC(data: Data, boxStart: UInt64, boxSize: UInt64, trackIndex: Int) -> [ContainerDiagnostic] {
+        var issues: [ContainerDiagnostic] = []
+        let configStart = boxStart + 8
+        let configEnd = boxStart + boxSize
+        // avcC layout: configVersion(1) + profile(1) + compat(1) + level(1) + lengthSizeMinusOne(1) + numSPS(1)
+        guard configStart + 6 <= configEnd else {
+            issues.append(ContainerDiagnostic(
+                category: .nalStructure,
+                severity: .error,
+                title: "Truncated avcC Box",
+                detail: "Track \(trackIndex): avcC configuration box is too small to contain valid decoder parameters.",
+                byteOffset: boxStart,
+                remediation: .reencode,
+                playerNotes: "Decoder cannot initialize; file is unplayable"
+            ))
+            return issues
+        }
+
+        let numSPS = Int(data[Int(configStart + 5)] & 0x1F)
+        if numSPS == 0 {
+            issues.append(ContainerDiagnostic(
+                category: .nalStructure,
+                severity: .error,
+                title: "Missing SPS in avcC",
+                detail: "Track \(trackIndex): avcC contains 0 Sequence Parameter Sets. H.264 decoder cannot initialize without SPS.",
+                byteOffset: configStart + 5,
+                remediation: .reencode,
+                playerNotes: "File is unplayable in all players; decoder cannot determine resolution, profile, or reference frame count"
+            ))
+        }
+
+        // Skip past SPS entries to find PPS count
+        var readPos = configStart + 6
+        for _ in 0..<numSPS {
+            guard readPos + 2 <= configEnd else { return issues }
+            let spsLen = UInt64(data.readUInt16BE(at: readPos))
+            readPos += 2 + spsLen
+        }
+
+        guard readPos + 1 <= configEnd else { return issues }
+        let numPPS = Int(data[Int(readPos)])
+        if numPPS == 0 {
+            issues.append(ContainerDiagnostic(
+                category: .nalStructure,
+                severity: .error,
+                title: "Missing PPS in avcC",
+                detail: "Track \(trackIndex): avcC contains 0 Picture Parameter Sets. H.264 decoder cannot decode frames without PPS.",
+                byteOffset: readPos,
+                remediation: .reencode,
+                playerNotes: "File is unplayable; PPS defines entropy coding mode and quantization parameters"
+            ))
+        }
+
+        return issues
+    }
+
+    /// Validate H.265 hvcC: must contain VPS, SPS, and PPS NAL unit arrays.
+    private func validateHvcC(data: Data, boxStart: UInt64, boxSize: UInt64, trackIndex: Int) -> [ContainerDiagnostic] {
+        var issues: [ContainerDiagnostic] = []
+        let configStart = boxStart + 8
+        let configEnd = boxStart + boxSize
+        // hvcC has a 22-byte fixed header, then numOfArrays(1), then NAL unit arrays
+        guard configStart + 23 <= configEnd else {
+            issues.append(ContainerDiagnostic(
+                category: .nalStructure,
+                severity: .error,
+                title: "Truncated hvcC Box",
+                detail: "Track \(trackIndex): hvcC configuration box is too small to contain valid HEVC decoder parameters.",
+                byteOffset: boxStart,
+                remediation: .reencode,
+                playerNotes: "Decoder cannot initialize; file is unplayable"
+            ))
+            return issues
+        }
+
+        let numArrays = Int(data[Int(configStart + 22)])
+        var hasVPS = false
+        var hasSPS = false
+        var hasPPS = false
+        var readPos = configStart + 23
+
+        for _ in 0..<numArrays {
+            guard readPos + 3 <= configEnd else { break }
+            let nalType = data[Int(readPos)] & 0x3F
+            let numNALUs = Int(data.readUInt16BE(at: readPos + 1))
+            readPos += 3
+
+            if nalType == 32 && numNALUs > 0 { hasVPS = true }
+            if nalType == 33 && numNALUs > 0 { hasSPS = true }
+            if nalType == 34 && numNALUs > 0 { hasPPS = true }
+
+            for _ in 0..<numNALUs {
+                guard readPos + 2 <= configEnd else { break }
+                let naluLen = UInt64(data.readUInt16BE(at: readPos))
+                readPos += 2 + naluLen
+            }
+        }
+
+        if !hasVPS {
+            issues.append(ContainerDiagnostic(
+                category: .nalStructure,
+                severity: .error,
+                title: "Missing VPS in hvcC",
+                detail: "Track \(trackIndex): hvcC contains no Video Parameter Set (NAL type 32). HEVC decoder cannot initialize.",
+                byteOffset: boxStart,
+                remediation: .reencode,
+                playerNotes: "File is unplayable in all players"
+            ))
+        }
+        if !hasSPS {
+            issues.append(ContainerDiagnostic(
+                category: .nalStructure,
+                severity: .error,
+                title: "Missing SPS in hvcC",
+                detail: "Track \(trackIndex): hvcC contains no Sequence Parameter Set (NAL type 33). HEVC decoder cannot initialize.",
+                byteOffset: boxStart,
+                remediation: .reencode,
+                playerNotes: "File is unplayable in all players"
+            ))
+        }
+        if !hasPPS {
+            issues.append(ContainerDiagnostic(
+                category: .nalStructure,
+                severity: .error,
+                title: "Missing PPS in hvcC",
+                detail: "Track \(trackIndex): hvcC contains no Picture Parameter Set (NAL type 34). HEVC decoder cannot decode any frames.",
+                byteOffset: boxStart,
+                remediation: .reencode,
+                playerNotes: "File is unplayable in all players"
+            ))
+        }
+
+        return issues
     }
 
     // MARK: - NAL Unit Boundary Validation

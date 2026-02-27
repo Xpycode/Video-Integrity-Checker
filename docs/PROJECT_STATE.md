@@ -13,7 +13,7 @@
 - **Phase:** implementation
 - **Focus:** Test with real corrupt/MXF files, Tier 2 gaps (fMP4, MXF metadata depth), dual-engine cross-reference, unit tests
 - **Status:** in progress
-- **Last session:** 2026-02-26
+- **Last session:** 2026-02-27
 
 ## Funnel Progress
 
@@ -42,8 +42,8 @@
 | Features | partial | Core analysis + deep ISOBMFF/MXF inspection (sample tables, NAL boundaries, KLV integrity, timing tables, SPS/PPS validation, stco overflow, box size validation, player notes). Needs real corrupt/MXF test files. |
 | UI/Polish | partial | NavigationSplitView, toolbar, drop zone done |
 | Testing | — | No unit tests yet |
-| Docs | partial | Directions set up, CLAUDE.md current |
-| Distribution | — | Direct download (non-App Store) |
+| Docs | partial | Directions set up, CLAUDE.md current, README on GitHub |
+| Distribution | — | Direct download (non-App Store), repo at github.com/Xpycode/Video-Analyzer |
 
 ## Architecture Decisions
 - AVFoundation as primary analysis engine (covers MP4, MOV, HEVC, ProRes, etc.)

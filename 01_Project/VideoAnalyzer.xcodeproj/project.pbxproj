@@ -7,11 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0177889900112233445566CC /* MXFInspector.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC33DD44EE55FF6677889900 /* MXFInspector.swift */; };
 		06ED393AF0866D0BECCE2DC1 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8C927930D18747E8AFA75D4 /* SettingsView.swift */; };
 		2D1D65332929DC7890F8122D /* DetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DA3CE19FC62F758250336D7 /* DetailView.swift */; };
+		37D3A5D18EDED3C2FD16FC2E /* CoreFixTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5898A49C1349746FD194ABB5 /* CoreFixTests.swift */; };
 		37EB3044D077F19C9A4FD6DE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 43813C3F6BE43D7A5BF8C848 /* Assets.xcassets */; };
 		42924D8FE6D9CCA6703DCE20 /* AVFoundationAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 075952F8B7A5EF7875AEBE1B /* AVFoundationAnalyzer.swift */; };
+		4751F47EC8D2F2556724C0C1 /* ContainerInspector.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFF9809A33AEA5B2D34AB5B3 /* ContainerInspector.swift */; };
+		4D88D7A3EBEF916E2523B684 /* MXFInspector.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE059D2A34B730B092569885 /* MXFInspector.swift */; };
 		598E45281F720D2FBE9AE43B /* VideoAnalyzerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05FEBD9759F1C7AFBD76712F /* VideoAnalyzerApp.swift */; };
 		5A1FAFFAB799CC4FEEC207CB /* DropZoneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBD05AA27C0131590662B474 /* DropZoneView.swift */; };
 		7053EA7802F19AA519F0096F /* MediaFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 392ED10EC0339BC0315E840D /* MediaFile.swift */; };
@@ -21,13 +23,23 @@
 		9C30481D55CA9999AB48CF5B /* AnalysisResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751AF28A6BA10E4A1339B85F /* AnalysisResult.swift */; };
 		A52C53DB7504F3033F58A33F /* FFmpegAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6DD445B738519A095C17D8D /* FFmpegAnalyzer.swift */; };
 		ABC5D51CF79DDCFFDD6EE6E6 /* MediaIssue.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF4D3729D452136D7309F7E8 /* MediaIssue.swift */; };
+		ABE34C6640E1B3B13E5C5109 /* FileDiscovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAB2671AE531A122DE21BD30 /* FileDiscovery.swift */; };
 		BE35FBDA55AFDE242C6ADA09 /* AnalyzerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10EB919B908E36D7B3EF1F24 /* AnalyzerViewModel.swift */; };
 		C807BB7E570201E3A9EEE6AA /* AnalysisProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF4AAB5D02FB0B62A21AE79 /* AnalysisProgress.swift */; };
+		D1759B1FBD5913FF413C7019 /* ContainerInspectorRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0E31CB70C29E6135B5075B3 /* ContainerInspectorRegistry.swift */; };
 		E78B1F5C6E93F4F0F98B8B0C /* MediaMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A0B83043C10BC2E4D1DBC60 /* MediaMetadata.swift */; };
-		EE55FF6677889900112233AA /* ContainerInspector.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF66 /* ContainerInspector.swift */; };
-		FF66778899001122334455BB /* ISOBMFFInspector.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22CC33DD44EE55FF667788 /* ISOBMFFInspector.swift */; };
-		1188990011223344556677DD /* ContainerInspectorRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD44EE55FF66778899001122 /* ContainerInspectorRegistry.swift */; };
+		EEB3111BDCE7B471E6FFC5DA /* ISOBMFFInspector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56890FF4F6E50579EFFD6BC8 /* ISOBMFFInspector.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		B5B61E898F5030FDDD96FA92 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5B336C84403641AA5D8D2377 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CBF05FCFBAB7C490F6C0C53B;
+			remoteInfo = VideoAnalyzer;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		05FEBD9759F1C7AFBD76712F /* VideoAnalyzerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoAnalyzerApp.swift; sourceTree = "<group>"; };
@@ -38,20 +50,23 @@
 		392ED10EC0339BC0315E840D /* MediaFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaFile.swift; sourceTree = "<group>"; };
 		3A0B83043C10BC2E4D1DBC60 /* MediaMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaMetadata.swift; sourceTree = "<group>"; };
 		43813C3F6BE43D7A5BF8C848 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		56890FF4F6E50579EFFD6BC8 /* ISOBMFFInspector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ISOBMFFInspector.swift; sourceTree = "<group>"; };
+		5898A49C1349746FD194ABB5 /* CoreFixTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreFixTests.swift; sourceTree = "<group>"; };
 		6FBB656DCF825FE6719D5251 /* FileListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileListView.swift; sourceTree = "<group>"; };
 		751AF28A6BA10E4A1339B85F /* AnalysisResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisResult.swift; sourceTree = "<group>"; };
+		78DA34C265AA22498E6305D9 /* VideoAnalyzerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VideoAnalyzerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8BF4AAB5D02FB0B62A21AE79 /* AnalysisProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisProgress.swift; sourceTree = "<group>"; };
 		9267DD963C8FAF252BE44FDC /* VideoAnalyzer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VideoAnalyzer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A36D23289E737959271F739C /* AnalysisCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisCoordinator.swift; sourceTree = "<group>"; };
 		B6DD445B738519A095C17D8D /* FFmpegAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FFmpegAnalyzer.swift; sourceTree = "<group>"; };
 		BBD05AA27C0131590662B474 /* DropZoneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DropZoneView.swift; sourceTree = "<group>"; };
 		C8C927930D18747E8AFA75D4 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		CE059D2A34B730B092569885 /* MXFInspector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MXFInspector.swift; sourceTree = "<group>"; };
 		CF4D3729D452136D7309F7E8 /* MediaIssue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaIssue.swift; sourceTree = "<group>"; };
+		DAB2671AE531A122DE21BD30 /* FileDiscovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileDiscovery.swift; sourceTree = "<group>"; };
+		DFF9809A33AEA5B2D34AB5B3 /* ContainerInspector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContainerInspector.swift; sourceTree = "<group>"; };
 		E8B6BD81ADD821DD7D892575 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		AA11BB22CC33DD44EE55FF66 /* ContainerInspector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContainerInspector.swift; sourceTree = "<group>"; };
-		BB22CC33DD44EE55FF667788 /* ISOBMFFInspector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ISOBMFFInspector.swift; sourceTree = "<group>"; };
-		CC33DD44EE55FF6677889900 /* MXFInspector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MXFInspector.swift; sourceTree = "<group>"; };
-		DD44EE55FF66778899001122 /* ContainerInspectorRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContainerInspectorRegistry.swift; sourceTree = "<group>"; };
+		F0E31CB70C29E6135B5075B3 /* ContainerInspectorRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContainerInspectorRegistry.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -59,8 +74,20 @@
 			isa = PBXGroup;
 			children = (
 				9267DD963C8FAF252BE44FDC /* VideoAnalyzer.app */,
+				78DA34C265AA22498E6305D9 /* VideoAnalyzerTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		15B4A7CAF3ED76C2E1AC5864 /* ContainerInspection */ = {
+			isa = PBXGroup;
+			children = (
+				DFF9809A33AEA5B2D34AB5B3 /* ContainerInspector.swift */,
+				F0E31CB70C29E6135B5075B3 /* ContainerInspectorRegistry.swift */,
+				56890FF4F6E50579EFFD6BC8 /* ISOBMFFInspector.swift */,
+				CE059D2A34B730B092569885 /* MXFInspector.swift */,
+			);
+			path = ContainerInspection;
 			sourceTree = "<group>";
 		};
 		1A425A0B9FE37AEAD1B1B3BC /* Services */ = {
@@ -68,21 +95,11 @@
 			children = (
 				A36D23289E737959271F739C /* AnalysisCoordinator.swift */,
 				075952F8B7A5EF7875AEBE1B /* AVFoundationAnalyzer.swift */,
-				2299001122334455667788EE /* ContainerInspection */,
 				B6DD445B738519A095C17D8D /* FFmpegAnalyzer.swift */,
+				DAB2671AE531A122DE21BD30 /* FileDiscovery.swift */,
+				15B4A7CAF3ED76C2E1AC5864 /* ContainerInspection */,
 			);
 			path = Services;
-			sourceTree = "<group>";
-		};
-		2299001122334455667788EE /* ContainerInspection */ = {
-			isa = PBXGroup;
-			children = (
-				AA11BB22CC33DD44EE55FF66 /* ContainerInspector.swift */,
-				DD44EE55FF66778899001122 /* ContainerInspectorRegistry.swift */,
-				BB22CC33DD44EE55FF667788 /* ISOBMFFInspector.swift */,
-				CC33DD44EE55FF6677889900 /* MXFInspector.swift */,
-			);
-			path = ContainerInspection;
 			sourceTree = "<group>";
 		};
 		4D299CBB4F054F2389471C27 /* VideoAnalyzer */ = {
@@ -130,6 +147,14 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
+		931FC349681B231CDF5D94E8 /* VideoAnalyzerTests */ = {
+			isa = PBXGroup;
+			children = (
+				5898A49C1349746FD194ABB5 /* CoreFixTests.swift */,
+			);
+			path = VideoAnalyzerTests;
+			sourceTree = "<group>";
+		};
 		A3AF4A83100729F7696E20DE /* Resources */ = {
 			isa = PBXGroup;
 			children = (
@@ -142,6 +167,7 @@
 			isa = PBXGroup;
 			children = (
 				4D299CBB4F054F2389471C27 /* VideoAnalyzer */,
+				931FC349681B231CDF5D94E8 /* VideoAnalyzerTests */,
 				115E80463A7617CBDFC08AA5 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -176,6 +202,24 @@
 			productReference = 9267DD963C8FAF252BE44FDC /* VideoAnalyzer.app */;
 			productType = "com.apple.product-type.application";
 		};
+		FCDDC2CBF2B2ADD4F11FD5FD /* VideoAnalyzerTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C384E4751DAFACD50DB87027 /* Build configuration list for PBXNativeTarget "VideoAnalyzerTests" */;
+			buildPhases = (
+				67BF3C2949074CABF3958706 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F085FA955150574F3F7B48C7 /* PBXTargetDependency */,
+			);
+			name = VideoAnalyzerTests;
+			packageProductDependencies = (
+			);
+			productName = VideoAnalyzerTests;
+			productReference = 78DA34C265AA22498E6305D9 /* VideoAnalyzerTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -205,6 +249,7 @@
 			projectRoot = "";
 			targets = (
 				CBF05FCFBAB7C490F6C0C53B /* VideoAnalyzer */,
+				FCDDC2CBF2B2ADD4F11FD5FD /* VideoAnalyzerTests */,
 			);
 		};
 /* End PBXProject section */
@@ -221,6 +266,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		67BF3C2949074CABF3958706 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				37D3A5D18EDED3C2FD16FC2E /* CoreFixTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		C19F20A7684FA5BF2740B57C /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -228,17 +281,18 @@
 				42924D8FE6D9CCA6703DCE20 /* AVFoundationAnalyzer.swift in Sources */,
 				7100C69B0DF3D60CF4C49C2F /* AnalysisCoordinator.swift in Sources */,
 				C807BB7E570201E3A9EEE6AA /* AnalysisProgress.swift in Sources */,
-				EE55FF6677889900112233AA /* ContainerInspector.swift in Sources */,
-				FF66778899001122334455BB /* ISOBMFFInspector.swift in Sources */,
-				0177889900112233445566CC /* MXFInspector.swift in Sources */,
-				1188990011223344556677DD /* ContainerInspectorRegistry.swift in Sources */,
 				9C30481D55CA9999AB48CF5B /* AnalysisResult.swift in Sources */,
 				BE35FBDA55AFDE242C6ADA09 /* AnalyzerViewModel.swift in Sources */,
+				4751F47EC8D2F2556724C0C1 /* ContainerInspector.swift in Sources */,
+				D1759B1FBD5913FF413C7019 /* ContainerInspectorRegistry.swift in Sources */,
 				76D61AFBB95539BB1C0825B9 /* ContentView.swift in Sources */,
 				2D1D65332929DC7890F8122D /* DetailView.swift in Sources */,
 				5A1FAFFAB799CC4FEEC207CB /* DropZoneView.swift in Sources */,
 				A52C53DB7504F3033F58A33F /* FFmpegAnalyzer.swift in Sources */,
+				ABE34C6640E1B3B13E5C5109 /* FileDiscovery.swift in Sources */,
 				81DCBB7C5DAC30769D10026B /* FileListView.swift in Sources */,
+				EEB3111BDCE7B471E6FFC5DA /* ISOBMFFInspector.swift in Sources */,
+				4D88D7A3EBEF916E2523B684 /* MXFInspector.swift in Sources */,
 				7053EA7802F19AA519F0096F /* MediaFile.swift in Sources */,
 				ABC5D51CF79DDCFFDD6EE6E6 /* MediaIssue.swift in Sources */,
 				E78B1F5C6E93F4F0F98B8B0C /* MediaMetadata.swift in Sources */,
@@ -248,6 +302,14 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		F085FA955150574F3F7B48C7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = CBF05FCFBAB7C490F6C0C53B /* VideoAnalyzer */;
+			targetProxy = B5B61E898F5030FDDD96FA92 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		0F2B1213032A564432D7FF71 /* Release */ = {
@@ -307,6 +369,23 @@
 			};
 			name = Release;
 		};
+		39635F42CEF534F704A5B33A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.videoanalyzer.VideoAnalyzerTests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/VideoAnalyzer.app/Contents/MacOS/VideoAnalyzer";
+			};
+			name = Debug;
+		};
 		9B106941A9FDE45955F82770 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -346,6 +425,23 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.videoanalyzer.VideoAnalyzer;
 				PRODUCT_NAME = VideoAnalyzer;
 				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		ABF6C348B2DEFD59B795A6BF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.videoanalyzer.VideoAnalyzerTests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/VideoAnalyzer.app/Contents/MacOS/VideoAnalyzer";
 			};
 			name = Release;
 		};
@@ -416,6 +512,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		C384E4751DAFACD50DB87027 /* Build configuration list for PBXNativeTarget "VideoAnalyzerTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				39635F42CEF534F704A5B33A /* Debug */,
+				ABF6C348B2DEFD59B795A6BF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		D27E2E4F2421A028B76164B6 /* Build configuration list for PBXNativeTarget "VideoAnalyzer" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

@@ -6,10 +6,6 @@ struct DropZoneView: View {
     let onDrop: ([URL]) -> Void
     @State private var isTargeted = false
 
-    nonisolated private static let supportedExtensions: Set<String> = [
-        "mov", "mp4", "m4v", "m4a", "wav", "aiff", "mp3",
-        "ts", "mkv", "webm", "avi", "flv", "wmv", "mxf"
-    ]
 
     var body: some View {
         ZStack {
@@ -59,7 +55,7 @@ struct DropZoneView: View {
                     let data = item as? Data,
                     let url = URL(dataRepresentation: data, relativeTo: nil)
                 else { return }
-                let collected = DropZoneView.collectMediaFiles(from: [url])
+                let collected = FileDiscovery.collectMediaFiles(from: [url])
                 DispatchQueue.main.async {
                     resolvedURLs.append(contentsOf: collected)
                 }
@@ -83,40 +79,10 @@ struct DropZoneView: View {
         ]
 
         if panel.runModal() == .OK {
-            onDrop(DropZoneView.collectMediaFiles(from: panel.urls))
+            onDrop(FileDiscovery.collectMediaFiles(from: panel.urls))
         }
     }
 
-    nonisolated private static func collectMediaFiles(from urls: [URL]) -> [URL] {
-        var results: [URL] = []
-        let fm = FileManager.default
-
-        for url in urls {
-            var isDir: ObjCBool = false
-            guard fm.fileExists(atPath: url.path, isDirectory: &isDir) else { continue }
-
-            if isDir.boolValue {
-                guard let enumerator = fm.enumerator(
-                    at: url,
-                    includingPropertiesForKeys: [.isRegularFileKey],
-                    options: [.skipsHiddenFiles]
-                ) else { continue }
-
-                for case let fileURL as URL in enumerator {
-                    guard (try? fileURL.resourceValues(forKeys: [.isRegularFileKey]))?.isRegularFile == true else { continue }
-                    if Self.supportedExtensions.contains(fileURL.pathExtension.lowercased()) {
-                        results.append(fileURL)
-                    }
-                }
-            } else {
-                if Self.supportedExtensions.contains(url.pathExtension.lowercased()) {
-                    results.append(url)
-                }
-            }
-        }
-
-        return results
-    }
 }
 
 #Preview {

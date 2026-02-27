@@ -95,7 +95,8 @@ struct ContentView: View {
         panel.allowedContentTypes = [.movie, .audio, .mpeg4Movie, .quickTimeMovie, .avi, .wav, .aiff, .mp3]
 
         if panel.runModal() == .OK {
-            viewModel.addFiles(urls: panel.urls)
+            let mediaFiles = FileDiscovery.collectMediaFiles(from: panel.urls)
+            viewModel.addFiles(urls: mediaFiles)
         }
     }
 

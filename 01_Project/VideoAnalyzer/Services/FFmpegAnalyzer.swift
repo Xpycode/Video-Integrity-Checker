@@ -1,9 +1,18 @@
 import Foundation
 import CoreGraphics
 
-actor FFmpegAnalyzer {
-    private var ffmpegPath: String?
-    private var ffprobePath: String?
+final class FFmpegAnalyzer: @unchecked Sendable {
+    private let lock = NSLock()
+    private var _ffmpegPath: String?
+    private var _ffprobePath: String?
+
+    private var ffmpegPath: String? {
+        lock.withLock { _ffmpegPath }
+    }
+
+    private var ffprobePath: String? {
+        lock.withLock { _ffprobePath }
+    }
 
     var isAvailable: Bool { ffmpegPath != nil }
 
@@ -18,8 +27,10 @@ actor FFmpegAnalyzer {
             if FileManager.default.isExecutableFile(atPath: candidate) {
                 let dir = URL(fileURLWithPath: candidate).deletingLastPathComponent().path
                 let probe = dir + "/ffprobe"
-                ffmpegPath = candidate
-                ffprobePath = FileManager.default.isExecutableFile(atPath: probe) ? probe : nil
+                lock.withLock {
+                    _ffmpegPath = candidate
+                    _ffprobePath = FileManager.default.isExecutableFile(atPath: probe) ? probe : nil
+                }
                 return true
             }
         }
@@ -27,8 +38,10 @@ actor FFmpegAnalyzer {
         if let found = resolveWhich("ffmpeg") {
             let dir = URL(fileURLWithPath: found).deletingLastPathComponent().path
             let probe = dir + "/ffprobe"
-            ffmpegPath = found
-            ffprobePath = FileManager.default.isExecutableFile(atPath: probe) ? probe : nil
+            lock.withLock {
+                _ffmpegPath = found
+                _ffprobePath = FileManager.default.isExecutableFile(atPath: probe) ? probe : nil
+            }
             return true
         }
 
@@ -37,10 +50,12 @@ actor FFmpegAnalyzer {
 
     func setCustomPath(_ path: String) {
         guard FileManager.default.isExecutableFile(atPath: path) else { return }
-        ffmpegPath = path
         let dir = URL(fileURLWithPath: path).deletingLastPathComponent().path
         let probe = dir + "/ffprobe"
-        ffprobePath = FileManager.default.isExecutableFile(atPath: probe) ? probe : nil
+        lock.withLock {
+            _ffmpegPath = path
+            _ffprobePath = FileManager.default.isExecutableFile(atPath: probe) ? probe : nil
+        }
     }
 
     func analyze(file: MediaFile) async throws -> AnalysisResult {
@@ -79,10 +94,9 @@ actor FFmpegAnalyzer {
     }
 
     private func runFFmpegAnalysis(url: URL, ffmpegPath: String) async throws -> [MediaIssue] {
-        let executableURL = URL(fileURLWithPath: ffmpegPath)
         let arguments = ["-nostdin", "-v", "error", "-i", url.path, "-f", "null", "-"]
 
-        let result = try runProcess(executableURL: executableURL, arguments: arguments)
+        let result = try await runProcess(ffmpegPath, arguments: arguments)
 
         let stderr = String(data: result.stderr, encoding: .utf8) ?? ""
         let lines = stderr.split(separator: "\n", omittingEmptySubsequences: true)
@@ -116,14 +130,30 @@ actor FFmpegAnalyzer {
             issues.append(MediaIssue(type: issueType, severity: severity, description: text))
         }
 
+        // C6: Check ffmpeg exit code — a non-zero exit with no parsed issues means failure
+        if result.exitCode != 0 {
+            if issues.isEmpty {
+                issues.append(MediaIssue(
+                    type: .decodeError,
+                    severity: .error,
+                    description: "ffmpeg exited with code \(result.exitCode) \u{2014} file may be corrupt or unsupported"
+                ))
+            } else if !issues.contains(where: { $0.severity == .error }) {
+                issues.append(MediaIssue(
+                    type: .decodeError,
+                    severity: .error,
+                    description: "ffmpeg exited with non-zero code \(result.exitCode)"
+                ))
+            }
+        }
+
         return issues
     }
 
     private func runFFprobeMetadata(url: URL, probePath: String) async throws -> MediaMetadata {
-        let executableURL = URL(fileURLWithPath: probePath)
         let arguments = ["-v", "quiet", "-print_format", "json", "-show_format", "-show_streams", url.path]
 
-        let result = try runProcess(executableURL: executableURL, arguments: arguments)
+        let result = try await runProcess(probePath, arguments: arguments)
 
         guard let json = try? JSONSerialization.jsonObject(with: result.stdout) as? [String: Any] else {
             return MediaMetadata()
@@ -206,27 +236,55 @@ actor FFmpegAnalyzer {
         )
     }
 
-    private nonisolated func runProcess(executableURL: URL, arguments: [String]) throws -> (stdout: Data, stderr: Data, exitCode: Int32) {
-        let stdoutPipe = Pipe()
-        let stderrPipe = Pipe()
-        let process = Process()
-        process.executableURL = executableURL
-        process.arguments = arguments
-        process.standardInput = FileHandle.nullDevice
-        process.standardOutput = stdoutPipe
-        process.standardError = stderrPipe
+    // Process execution off the cooperative thread pool to avoid blocking Swift Concurrency.
+    // Uses Thread.detachNewThread + continuation so waitUntilExit and pipe reads
+    // happen on a POSIX thread, not a cooperative executor thread.
+    private func runProcess(_ path: String, arguments: [String]) async throws -> (stdout: Data, stderr: Data, exitCode: Int32) {
+        try await withCheckedThrowingContinuation { continuation in
+            Thread.detachNewThread {
+                do {
+                    let process = Process()
+                    process.executableURL = URL(fileURLWithPath: path)
+                    process.arguments = arguments
+                    process.standardInput = FileHandle.nullDevice
+                    let stdoutPipe = Pipe()
+                    let stderrPipe = Pipe()
+                    process.standardOutput = stdoutPipe
+                    process.standardError = stderrPipe
 
-        try process.run()
+                    try process.run()
 
-        let stdoutData = stdoutPipe.fileHandleForReading.readDataToEndOfFile()
-        let stderrData = stderrPipe.fileHandleForReading.readDataToEndOfFile()
+                    // Read both pipes concurrently via GCD to avoid deadlock
+                    // when a pipe buffer fills before the other is drained.
+                    // nonisolated(unsafe): safe because DispatchGroup.wait() synchronizes.
+                    let group = DispatchGroup()
+                    nonisolated(unsafe) var stdoutData = Data()
+                    nonisolated(unsafe) var stderrData = Data()
 
-        process.waitUntilExit()
+                    group.enter()
+                    DispatchQueue.global().async {
+                        stdoutData = stdoutPipe.fileHandleForReading.readDataToEndOfFile()
+                        group.leave()
+                    }
 
-        return (stdoutData, stderrData, process.terminationStatus)
+                    group.enter()
+                    DispatchQueue.global().async {
+                        stderrData = stderrPipe.fileHandleForReading.readDataToEndOfFile()
+                        group.leave()
+                    }
+
+                    group.wait()
+                    process.waitUntilExit()
+
+                    continuation.resume(returning: (stdoutData, stderrData, process.terminationStatus))
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
     }
 
-    private nonisolated func resolveWhich(_ command: String) -> String? {
+    private func resolveWhich(_ command: String) -> String? {
         let process = Process()
         let pipe = Pipe()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/which")
@@ -241,7 +299,7 @@ actor FFmpegAnalyzer {
         return path.flatMap { $0.isEmpty ? nil : $0 }
     }
 
-    private nonisolated func parseRationalFrameRate(_ rational: String) -> Double? {
+    private func parseRationalFrameRate(_ rational: String) -> Double? {
         let parts = rational.split(separator: "/")
         guard parts.count == 2,
               let num = Double(parts[0]),

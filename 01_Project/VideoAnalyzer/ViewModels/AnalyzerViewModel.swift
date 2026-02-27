@@ -10,7 +10,7 @@ final class AnalyzerViewModel {
     private(set) var ffmpegAvailable: Bool = false
 
     private let coordinator = AnalysisCoordinator()
-    private var analysisTasks: [UUID: Task<Void, Never>] = [:]
+    private var batchTask: Task<Void, Never>?
 
     var selectedEntry: FileEntry? {
         guard let id = selectedFileID else { return nil }
@@ -27,7 +27,18 @@ final class AnalyzerViewModel {
     }
 
     func setup() async {
-        ffmpegAvailable = await coordinator.detectFFmpeg()
+        // C5: Wire stored settings into the coordinator
+        let storedPath = UserDefaults.standard.string(forKey: "ffmpegPath") ?? ""
+        let storedLimit = UserDefaults.standard.integer(forKey: "concurrencyLimit")
+
+        if !storedPath.isEmpty {
+            coordinator.setFFmpegPath(storedPath)
+        }
+
+        let limit = max(1, min(storedLimit == 0 ? 2 : storedLimit, 8))
+        coordinator.setConcurrencyLimit(limit)
+
+        ffmpegAvailable = coordinator.detectFFmpeg()
     }
 
     func addFiles(urls: [URL]) {
@@ -71,55 +82,63 @@ final class AnalyzerViewModel {
         analyzeAllPending()
     }
 
+    // C1: Use the coordinator's sliding-window batch API instead of spawning one Task per file
     func analyzeAllPending() {
-        for i in entries.indices where entries[i].result == nil && !entries[i].isAnalyzing {
-            let entry = entries[i]
-            entries[i].isAnalyzing = true
+        let pendingFiles = entries.compactMap { entry -> MediaFile? in
+            guard entry.result == nil && !entry.isAnalyzing else { return nil }
+            return entry.file
+        }
+        guard !pendingFiles.isEmpty else { return }
 
-            let task = Task { [weak self] in
-                guard let self else { return }
-                let result = await self.coordinator.analyzeFile(entry.file) { progress in
-                    Task { @MainActor [weak self] in
-                        guard let self else { return }
-                        if let idx = self.entries.firstIndex(where: { $0.id == entry.id }) {
-                            self.entries[idx].progress = progress
-                        }
+        for file in pendingFiles {
+            if let idx = entries.firstIndex(where: { $0.id == file.id }) {
+                entries[idx].isAnalyzing = true
+            }
+        }
+        isAnalyzing = true
+
+        batchTask = Task { [weak self] in
+            guard let self else { return }
+
+            let results = await self.coordinator.analyzeFiles(pendingFiles) { file, progress in
+                Task { @MainActor [weak self] in
+                    guard let self else { return }
+                    if let idx = self.entries.firstIndex(where: { $0.id == file.id }) {
+                        self.entries[idx].progress = progress
                     }
                 }
-                if let idx = self.entries.firstIndex(where: { $0.id == entry.id }) {
+            }
+
+            for result in results {
+                if let idx = self.entries.firstIndex(where: { $0.id == result.fileID }) {
                     self.entries[idx].result = result
                     self.entries[idx].isAnalyzing = false
                     self.entries[idx].progress = nil
                 }
-                self.analysisTasks[entry.id] = nil
             }
-            analysisTasks[entry.id] = task
+
+            self.isAnalyzing = false
+            self.batchTask = nil
         }
     }
 
     func cancelAnalysis(for id: UUID) {
-        analysisTasks[id]?.cancel()
-        analysisTasks[id] = nil
-        if let idx = entries.firstIndex(where: { $0.id == id }) {
-            entries[idx].isAnalyzing = false
-            entries[idx].progress = nil
-        }
+        cancelAll()
     }
 
     func cancelAll() {
-        for (id, task) in analysisTasks {
-            task.cancel()
-            if let idx = entries.firstIndex(where: { $0.id == id }) {
-                entries[idx].isAnalyzing = false
-                entries[idx].progress = nil
-            }
+        batchTask?.cancel()
+        batchTask = nil
+        for i in entries.indices where entries[i].isAnalyzing {
+            entries[i].isAnalyzing = false
+            entries[i].progress = nil
         }
-        analysisTasks.removeAll()
+        isAnalyzing = false
     }
 
     func reanalyze(id: UUID) {
         guard let idx = entries.firstIndex(where: { $0.id == id }) else { return }
-        cancelAnalysis(for: id)
+        cancelAll()
         entries[idx].result = nil
         entries[idx].progress = nil
         analyzeAllPending()

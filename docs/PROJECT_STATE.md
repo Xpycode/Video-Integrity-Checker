@@ -11,8 +11,8 @@
 ## Current Position
 - **Funnel:** build
 - **Phase:** implementation
-- **Focus:** Test with real corrupt/MXF files, Tier 2 gaps (fMP4, MXF metadata depth), dual-engine cross-reference, unit tests
-- **Status:** in progress
+- **Focus:** All 11 code review issues resolved (C1-C6, I1-I4, S1). Next: polish, real-file testing, dual-engine cross-reference
+- **Status:** fixes complete
 - **Last session:** 2026-02-27
 
 ## Funnel Progress
@@ -25,7 +25,7 @@
 
 ## Phase Progress
 ```
-[##################..] 92% - Core + ISOBMFF + MXF inspectors + Tier 1 validation done, dual-engine/fMP4/tests next
+[###################.] 96% - Concurrency rework + settings wiring + parser fixes + test target done
 ```
 
 | Phase | Status | Tasks |
@@ -41,7 +41,7 @@
 |-----------|--------|-------|
 | Features | partial | Core analysis + deep ISOBMFF/MXF inspection (sample tables, NAL boundaries, KLV integrity, timing tables, SPS/PPS validation, stco overflow, box size validation, player notes). Needs real corrupt/MXF test files. |
 | UI/Polish | partial | NavigationSplitView, toolbar, drop zone done |
-| Testing | — | No unit tests yet |
+| Testing | partial | 17 core tests (stsz, ctts, exit code, file discovery) |
 | Docs | partial | Directions set up, CLAUDE.md current, README on GitHub |
 | Distribution | — | Direct download (non-App Store), repo at github.com/Xpycode/Video-Analyzer |
 
@@ -59,6 +59,10 @@
 - This app is analysis-only; repair/remux is a separate app project
 
 ## Blockers
+- None — concurrency rework complete, test target exists
+
+## Pending Decision
+- Rename: VideoAnalyzer → Video Integrity Checker?
 
 ---
 *Updated by Claude. Source of truth for project position.*

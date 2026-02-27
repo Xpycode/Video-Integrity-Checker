@@ -2,7 +2,7 @@ import AVFoundation
 import CoreMedia
 import CoreGraphics
 
-actor AVFoundationAnalyzer {
+final class AVFoundationAnalyzer: Sendable {
 
     func analyze(file: MediaFile, progressHandler: @Sendable (AnalysisProgress) -> Void) async throws -> AnalysisResult {
         let startTime = Date()
@@ -272,6 +272,7 @@ actor AVFoundationAnalyzer {
                     phase: .analyzingVideo,
                     startTime: startTime
                 ))
+                await Task.yield()
             }
         }
 
@@ -372,6 +373,9 @@ actor AVFoundationAnalyzer {
         while let _ = output.copyNextSampleBuffer() {
             try Task.checkCancellation()
             sampleCount += 1
+            if sampleCount % 1000 == 0 {
+                await Task.yield()
+            }
         }
 
         if reader.status == .failed {

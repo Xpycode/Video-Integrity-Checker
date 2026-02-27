@@ -445,7 +445,7 @@ struct ISOBMFFInspector: ContainerInspector {
     // MARK: - ctts (Composition Time Offsets)
 
     /// Returns array of (sampleCount, compositionOffset) tuples
-    private func parseCTTS(data: Data, stblChildren: [BoxInfo]) -> [(count: UInt32, offset: Int32)] {
+    func parseCTTS(data: Data, stblChildren: [BoxInfo]) -> [(count: UInt32, offset: Int32)] {
         guard let ctts = stblChildren.first(where: { $0.type == "ctts" }) else { return [] }
         let bodyStart = ctts.offset + 8
         let cttsEnd = min(ctts.offset + ctts.size, UInt64(data.count))
@@ -461,10 +461,11 @@ struct ISOBMFFInspector: ContainerInspector {
             let count = data.readUInt32BE(at: pos)
             let offset: Int32
             if version == 0 {
-                // unsigned offset
-                offset = Int32(bitPattern: data.readUInt32BE(at: pos + 4))
+                // v0: unsigned offset — clamp values above Int32.max
+                let raw = data.readUInt32BE(at: pos + 4)
+                offset = raw <= UInt32(Int32.max) ? Int32(raw) : Int32.max
             } else {
-                // signed offset (version 1)
+                // v1: signed offset (for B-frame reorder)
                 offset = Int32(bitPattern: data.readUInt32BE(at: pos + 4))
             }
             entries.append((count: count, offset: offset))
@@ -557,29 +558,34 @@ struct ISOBMFFInspector: ContainerInspector {
 
     // MARK: - stsz (Sample Size Table)
 
-    private struct SampleSizeInfo {
+    struct SampleSizeInfo {
         let uniformSize: UInt32     // If > 0, all samples are this size
         let sizes: [UInt32]         // Per-sample sizes (empty if uniformSize > 0)
-        var sampleCount: UInt32 {
-            uniformSize > 0 ? UInt32(sizes.count == 0 ? 0 : UInt32(sizes.count)) : UInt32(sizes.count)
+        let declaredCount: UInt32   // Sample count from the box header
+
+        var sampleCount: UInt32 { declaredCount }
+
+        func size(at index: Int) -> UInt32 {
+            if uniformSize > 0 { return uniformSize }
+            guard index < sizes.count else { return 0 }
+            return sizes[index]
         }
     }
 
-    private func parseSTSZ(data: Data, stblChildren: [BoxInfo]) -> SampleSizeInfo {
+    func parseSTSZ(data: Data, stblChildren: [BoxInfo]) -> SampleSizeInfo {
         guard let stsz = stblChildren.first(where: { $0.type == "stsz" }) else {
-            return SampleSizeInfo(uniformSize: 0, sizes: [])
+            return SampleSizeInfo(uniformSize: 0, sizes: [], declaredCount: 0)
         }
         let bodyStart = stsz.offset + 8
         let boxEnd = min(stsz.offset + stsz.size, UInt64(data.count))
-        guard bodyStart + 12 <= boxEnd else { return SampleSizeInfo(uniformSize: 0, sizes: []) }
+        guard bodyStart + 12 <= boxEnd else { return SampleSizeInfo(uniformSize: 0, sizes: [], declaredCount: 0) }
 
         // version(1) + flags(3) + sample_size(4) + sample_count(4)
         let uniformSize = data.readUInt32BE(at: bodyStart + 4)
         let sampleCount = data.readUInt32BE(at: bodyStart + 8)
 
         if uniformSize > 0 {
-            // All samples are the same size — no per-sample table
-            return SampleSizeInfo(uniformSize: uniformSize, sizes: Array(repeating: uniformSize, count: Int(min(sampleCount, 10_000_000))))
+            return SampleSizeInfo(uniformSize: uniformSize, sizes: [], declaredCount: sampleCount)
         }
 
         var sizes: [UInt32] = []
@@ -591,7 +597,7 @@ struct ISOBMFFInspector: ContainerInspector {
             sizes.append(data.readUInt32BE(at: pos))
             pos += 4
         }
-        return SampleSizeInfo(uniformSize: 0, sizes: sizes)
+        return SampleSizeInfo(uniformSize: 0, sizes: sizes, declaredCount: sampleCount)
     }
 
     // MARK: - Timing Table Validation (stts / ctts)
@@ -645,7 +651,7 @@ struct ISOBMFFInspector: ContainerInspector {
         }
 
         // ── stts Check 3: Sample count consistency with stsz ──────────────
-        let stszCount = UInt64(sampleSizes.sizes.count)
+        let stszCount = UInt64(sampleSizes.sampleCount)
         if stszCount > 0 && sttsTotalSamples > 0 && sttsTotalSamples != stszCount {
             issues.append(ContainerDiagnostic(
                 category: .sampleTable,
@@ -1088,7 +1094,7 @@ struct ISOBMFFInspector: ContainerInspector {
         guard !chunkOffsets.isEmpty, !sampleToChunk.isEmpty else { return [] }
 
         var frames: [(offset: UInt64, size: UInt32)] = []
-        frames.reserveCapacity(sampleSizes.sizes.count)
+        frames.reserveCapacity(Int(sampleSizes.sampleCount))
         var sampleIndex = 0
 
         for chunkIndex in 0..<chunkOffsets.count {
@@ -1105,8 +1111,8 @@ struct ISOBMFFInspector: ContainerInspector {
 
             var chunkPos = chunkOffsets[chunkIndex]
             for _ in 0..<samplesInChunk {
-                guard sampleIndex < sampleSizes.sizes.count else { return frames }
-                let size = sampleSizes.sizes[sampleIndex]
+                guard sampleIndex < Int(sampleSizes.sampleCount) else { return frames }
+                let size = sampleSizes.size(at: sampleIndex)
                 frames.append((offset: chunkPos, size: size))
                 chunkPos += UInt64(size)
                 sampleIndex += 1

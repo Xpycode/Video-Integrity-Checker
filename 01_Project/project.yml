@@ -32,3 +32,17 @@ targets:
         CODE_SIGN_STYLE: Automatic
         GENERATE_INFOPLIST_FILE: YES
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+
+  VideoAnalyzerTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: VideoAnalyzerTests
+        excludes:
+          - "**/.DS_Store"
+    dependencies:
+      - target: VideoAnalyzer
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.videoanalyzer.VideoAnalyzerTests
+        GENERATE_INFOPLIST_FILE: YES

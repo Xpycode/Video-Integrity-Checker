@@ -11,8 +11,8 @@
 ## Current Position
 - **Funnel:** build
 - **Phase:** polish
-- **Focus:** Real-file testing, dual-engine cross-reference, UI refinements
-- **Status:** core complete — entering polish
+- **Focus:** UI polish, real-file testing, dual-engine cross-reference
+- **Status:** renamed + polish in progress
 - **Last session:** 2026-02-27
 
 ## Funnel Progress
@@ -25,7 +25,7 @@
 
 ## Phase Progress
 ```
-[###################.] 96% - Concurrency rework + settings wiring + parser fixes + test target done
+[###################.] 97% - Rename complete, button polish started
 ```
 
 | Phase | Status | Tasks |
@@ -40,7 +40,7 @@
 | Dimension | Status | Notes |
 |-----------|--------|-------|
 | Features | partial | Core analysis + deep ISOBMFF/MXF inspection (sample tables, NAL boundaries, KLV integrity, timing tables, SPS/PPS validation, stco overflow, box size validation, player notes). Needs real corrupt/MXF test files. |
-| UI/Polish | partial | NavigationSplitView, toolbar, drop zone done |
+| UI/Polish | partial | NavigationSplitView, toolbar, drop zone done. Prominent button style in progress. |
 | Testing | partial | 17 core tests (stsz, ctts, exit code, file discovery) |
 | Docs | partial | Directions set up, CLAUDE.md current, README on GitHub |
 | Distribution | — | Direct download (non-App Store), repo at github.com/Xpycode/Video-Integrity-Checker |
@@ -63,6 +63,8 @@
 
 ## Completed Decisions
 - Renamed: VideoAnalyzer → Video Integrity Checker (2026-02-27)
+- Bundle ID: com.lucesumbrarum.VideoIntegrityChecker (2026-02-27)
+- Button style: prominent + labeled (2026-02-27)
 
 ---
 *Updated by Claude. Source of truth for project position.*

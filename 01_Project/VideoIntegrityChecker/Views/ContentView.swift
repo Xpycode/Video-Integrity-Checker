@@ -56,15 +56,17 @@ struct ContentView: View {
                 Button {
                     openFiles()
                 } label: {
-                    Label("Open", systemImage: "plus")
+                    Label("Add", systemImage: "plus")
                 }
+                .help("Add media files")
 
                 Button {
                     viewModel.analyzeAllPending()
                 } label: {
-                    Label("Analyze All", systemImage: "play.fill")
+                    Label("Analyze", systemImage: "play.fill")
                 }
                 .disabled(viewModel.entries.isEmpty)
+                .help("Analyze all pending files")
 
                 Button {
                     viewModel.clearAll()
@@ -72,8 +74,10 @@ struct ContentView: View {
                     Label("Clear", systemImage: "trash")
                 }
                 .disabled(viewModel.entries.isEmpty)
+                .help("Remove all files")
             }
         }
+        .toolbarTitleDisplayMode(.inline)
         .onReceive(NotificationCenter.default.publisher(for: .openFiles)) { _ in
             openFiles()
         }

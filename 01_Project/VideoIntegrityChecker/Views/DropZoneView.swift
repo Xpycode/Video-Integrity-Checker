@@ -28,10 +28,13 @@ struct DropZoneView: View {
                     .font(.body)
                     .foregroundStyle(Color.secondary)
 
-                Button("Open Files...") {
+                Button {
                     openFiles()
+                } label: {
+                    Label("Open Files...", systemImage: "folder")
                 }
-                .font(.body)
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
             }
             .padding(24)
         }

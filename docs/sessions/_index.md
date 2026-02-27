@@ -1,7 +1,7 @@
 # Session History
 
 ## Active Project
-VideoAnalyzer - Native macOS app for media file error/corruption detection
+Video Integrity Checker - Native macOS app for media file error/corruption detection
 
 ## Current Status
 → See [PROJECT_STATE.md](../PROJECT_STATE.md)
@@ -10,7 +10,7 @@ VideoAnalyzer - Native macOS app for media file error/corruption detection
 
 | Date | Focus | Outcome | Log |
 |------|-------|---------|-----|
-| 2026-02-27 | (A) Project reorg + GitHub push + README; (B) Code review audit + fix plan; (C) Execute fix plan — all 11 issues resolved | Folder reorg, GitHub push, README; independent audit; then 4-wave implementation: concurrency rework, settings wiring, parser fixes, 17 tests | [log](2026-02-27.md) |
+| 2026-02-27 | (A) Reorg + GitHub; (B) Code review audit; (C) Fix plan execution; (D) Rename → Video Integrity Checker + UI polish | Folder reorg, GitHub, README; audit; 4-wave fix (11 issues); full rename + bundle ID + button styling | [log](2026-02-27.md) |
 | 2026-02-26 | MXF inspector + enhanced validation + Tier 1 gap closure | MXF shallow parse, sample tables, NAL boundaries, corruption taxonomy, stts/ctts/SPS-PPS/box size/stco overflow (14 new checks) | [log](2026-02-26.md) |
 | 2026-02-25 | Full implementation + container inspection | 17 files, container-level diagnostics for MP4/MOV, edit list validation | [log](2026-02-25.md) |
 | 2026-02-18 | Install XcodePreviews globally | Cloned, installed `/preview` command, updated ecosystem docs, tested on Group Alarms | [log](2026-02-18.md) |

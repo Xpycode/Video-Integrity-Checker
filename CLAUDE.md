@@ -1,4 +1,4 @@
-# VideoAnalyzer
+# Video Integrity Checker
 
 Native macOS app that analyzes media files for errors, corruption, and integrity issues.
 
@@ -9,6 +9,7 @@ Native macOS app that analyzes media files for errors, corruption, and integrity
 - **Primary engine:** AVFoundation (AVAssetReader frame-by-frame decode)
 - **Secondary engine:** ffmpeg (optional, user-installed via Homebrew)
 - **Architecture:** MVVM with async/await
+- **Bundle ID:** com.lucesumbrarum.VideoIntegrityChecker
 
 ## Key Architecture Decisions
 - **AVFoundation first:** Covers ~75% of media files (MP4, MOV, M4V, HEVC, ProRes, MPEG-TS). Hardware-accelerated decode.
@@ -18,21 +19,21 @@ Native macOS app that analyzes media files for errors, corruption, and integrity
 
 ## Project Structure
 ```
-VideoAnalyzer/                     ← Repo root
-├── 01_Project/                    ← All Xcode stuff
-│   ├── VideoAnalyzer/             ← Source code
-│   │   ├── App/                   # App entry point, window management
-│   │   ├── Models/                # Data models (AnalysisResult, MediaFile, etc.)
-│   │   ├── Views/                 # SwiftUI views
-│   │   ├── ViewModels/            # ObservableObject view models
-│   │   ├── Services/              # Analysis engines
-│   │   └── Resources/             # Assets, localizations
-│   ├── VideoAnalyzer.xcodeproj/
-│   └── project.yml                # XcodeGen config
-├── 02_Design/Exports/             ← Design files & exports
-├── 03_Screenshots/                ← App Store / promotional
-├── 04_Exports/                    ← Builds, DMGs (gitignored)
-├── docs/                          ← Directions documentation
+VideoIntegrityChecker/                ← Repo root
+├── 01_Project/                       ← All Xcode stuff
+│   ├── VideoIntegrityChecker/        ← Source code
+│   │   ├── App/                      # App entry point, window management
+│   │   ├── Models/                   # Data models (AnalysisResult, MediaFile, etc.)
+│   │   ├── Views/                    # SwiftUI views
+│   │   ├── ViewModels/               # ObservableObject view models
+│   │   ├── Services/                 # Analysis engines
+│   │   └── Resources/                # Assets, localizations
+│   ├── VideoIntegrityChecker.xcodeproj/
+│   └── project.yml                   # XcodeGen config
+├── 02_Design/Exports/                ← Design files & exports
+├── 03_Screenshots/                   ← App Store / promotional
+├── 04_Exports/                       ← Builds, DMGs (gitignored)
+├── docs/                             ← Directions documentation
 └── CLAUDE.md
 ```
 

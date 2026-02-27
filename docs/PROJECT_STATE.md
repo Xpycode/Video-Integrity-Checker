@@ -3,16 +3,16 @@
 > **Size limit: <100 lines.** This is a digest, not an archive. Details go in session logs.
 
 ## Identity
-- **Project:** VideoAnalyzer
+- **Project:** Video Integrity Checker
 - **One-liner:** Native macOS app that analyzes media files for errors and corruption
 - **Tags:** macOS, SwiftUI, AVFoundation, media, video, audio, validation
 - **Started:** 2026-02-25
 
 ## Current Position
 - **Funnel:** build
-- **Phase:** implementation
-- **Focus:** All 11 code review issues resolved (C1-C6, I1-I4, S1). Next: polish, real-file testing, dual-engine cross-reference
-- **Status:** fixes complete
+- **Phase:** polish
+- **Focus:** Real-file testing, dual-engine cross-reference, UI refinements
+- **Status:** core complete — entering polish
 - **Last session:** 2026-02-27
 
 ## Funnel Progress
@@ -21,7 +21,7 @@
 |--------|--------|------|
 | **Define** | done | Interview done, spec reviewed |
 | **Plan** | done | Implementation plan created |
-| **Build** | active | Waves 1-5 + ISOBMFF/MXF inspectors + enhanced validation (sample tables, NAL boundaries, MXF integrity) |
+| **Build** | active | Implementation done, entering polish phase |
 
 ## Phase Progress
 ```
@@ -32,8 +32,8 @@
 |-------|--------|-------|
 | Discovery | done | Architecture decided |
 | Planning | done | 6-wave implementation plan |
-| Implementation | **active** | Waves 1-5 (13/13) + ISOBMFF + MXF inspectors + deep validation (sample tables, NAL, KLV, timing, SPS/PPS, box sizes, stco overflow) |
-| Polish | pending | Dual-engine cross-reference, Vision artifacts, unit tests |
+| Implementation | done | Waves 1-5 + ISOBMFF/MXF inspectors + deep validation + code review remediation (11/11 issues) |
+| Polish | **active** | Real-file testing, dual-engine cross-reference, UI refinements |
 
 ## Readiness
 
@@ -43,7 +43,7 @@
 | UI/Polish | partial | NavigationSplitView, toolbar, drop zone done |
 | Testing | partial | 17 core tests (stsz, ctts, exit code, file discovery) |
 | Docs | partial | Directions set up, CLAUDE.md current, README on GitHub |
-| Distribution | — | Direct download (non-App Store), repo at github.com/Xpycode/Video-Analyzer |
+| Distribution | — | Direct download (non-App Store), repo at github.com/Xpycode/Video-Integrity-Checker |
 
 ## Architecture Decisions
 - AVFoundation as primary analysis engine (covers MP4, MOV, HEVC, ProRes, etc.)
@@ -61,8 +61,8 @@
 ## Blockers
 - None — concurrency rework complete, test target exists
 
-## Pending Decision
-- Rename: VideoAnalyzer → Video Integrity Checker?
+## Completed Decisions
+- Renamed: VideoAnalyzer → Video Integrity Checker (2026-02-27)
 
 ---
 *Updated by Claude. Source of truth for project position.*

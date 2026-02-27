@@ -1,0 +1,549 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		09E1E20E17DED20291555781 /* AnalyzerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D56D1AF42B46851A0793C80 /* AnalyzerViewModel.swift */; };
+		188473ACCDC88349AD570F79 /* ContainerInspector.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1109369C09A8C92CDAA6CC6 /* ContainerInspector.swift */; };
+		2067D8C3835B0F5AEBA5CC08 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 682A33EFE554174EFAEAC726 /* SettingsView.swift */; };
+		359E591D096903AB2BE103DC /* MediaIssue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7686199D317BF3490A467AC5 /* MediaIssue.swift */; };
+		39D8D6553994EE34FE1CC1E5 /* ContainerInspectorRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = E874C6B1B8A1A6D5B51010C7 /* ContainerInspectorRegistry.swift */; };
+		4357CD3D0C4D6C08171923DA /* MediaMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 551480AD6EAC0CDE8F82C337 /* MediaMetadata.swift */; };
+		444BC34923FCC4F295BB1E38 /* DetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF3CF183188E452F85645666 /* DetailView.swift */; };
+		44F44C1737FFCB55A2FDAC5E /* CoreFixTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 430DA46978EAECDB5C67964A /* CoreFixTests.swift */; };
+		55BF717D24B805BFD8111F10 /* AnalysisResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1814BC80F29BA693C51A8B71 /* AnalysisResult.swift */; };
+		6BEF04FCC644AC8BD68EB107 /* AVFoundationAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 824467D1B049AB8A4E2ED98F /* AVFoundationAnalyzer.swift */; };
+		786F86CE09FADD627150C18D /* AnalysisProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0598F473E51B40C5E51F4C5B /* AnalysisProgress.swift */; };
+		98B69F72B42FCDC23B649985 /* MediaFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23052F53A1A97F27ED5DCC3D /* MediaFile.swift */; };
+		AC1350A1C0B1A1EC1C202859 /* DropZoneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83CAEC9D9F33B81CFAC3D3AA /* DropZoneView.swift */; };
+		BB56CC22862C13D05EC303B3 /* FileListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41435C829B2B95003ED3D6BF /* FileListView.swift */; };
+		BC50D94A3B2470D734D9C3ED /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86AF4558990DC21A5580BFEA /* ContentView.swift */; };
+		C15ED47A6EAE218C6D3F4183 /* FFmpegAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 574F1FD70EB101E8710C40F8 /* FFmpegAnalyzer.swift */; };
+		C2223C8997AE182292D691C2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E955446E3463284C52D98764 /* Assets.xcassets */; };
+		D58C8577D36CD46550D09F0A /* FileDiscovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D0C0E2622023130927DEA65 /* FileDiscovery.swift */; };
+		DBB695937DACF0EED3037AB9 /* ISOBMFFInspector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AE57C95B47ED7ED95A9208E /* ISOBMFFInspector.swift */; };
+		EB774A104D82A66F08DC16B5 /* VideoIntegrityCheckerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A4E5A7B2D5157D5EF25DB53 /* VideoIntegrityCheckerApp.swift */; };
+		F321FC13EA16990E5591A3A2 /* MXFInspector.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC17D3F97E3CC44CBE8BBB0F /* MXFInspector.swift */; };
+		FA7797786DF20A148FFC5963 /* AnalysisCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3397B00516189D3CBD93AB8F /* AnalysisCoordinator.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		9C2AEC3F7B3D02585572C83A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DDE03B9ECCEBEFE9EABD9379 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F77B5A67059EE16EDAB4DF6C;
+			remoteInfo = VideoIntegrityChecker;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		0598F473E51B40C5E51F4C5B /* AnalysisProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisProgress.swift; sourceTree = "<group>"; };
+		0BF750BA27A5D868B998B3BA /* VideoIntegrityChecker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VideoIntegrityChecker.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0D0C0E2622023130927DEA65 /* FileDiscovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileDiscovery.swift; sourceTree = "<group>"; };
+		1814BC80F29BA693C51A8B71 /* AnalysisResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisResult.swift; sourceTree = "<group>"; };
+		1D56D1AF42B46851A0793C80 /* AnalyzerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyzerViewModel.swift; sourceTree = "<group>"; };
+		23052F53A1A97F27ED5DCC3D /* MediaFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaFile.swift; sourceTree = "<group>"; };
+		230C08C75A0BD613E2F07D14 /* VideoIntegrityChecker.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = VideoIntegrityChecker.entitlements; sourceTree = "<group>"; };
+		3397B00516189D3CBD93AB8F /* AnalysisCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisCoordinator.swift; sourceTree = "<group>"; };
+		3988D79E8958A8C1EF2A6482 /* VideoIntegrityCheckerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VideoIntegrityCheckerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		3AE57C95B47ED7ED95A9208E /* ISOBMFFInspector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ISOBMFFInspector.swift; sourceTree = "<group>"; };
+		41435C829B2B95003ED3D6BF /* FileListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileListView.swift; sourceTree = "<group>"; };
+		430DA46978EAECDB5C67964A /* CoreFixTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreFixTests.swift; sourceTree = "<group>"; };
+		551480AD6EAC0CDE8F82C337 /* MediaMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaMetadata.swift; sourceTree = "<group>"; };
+		574F1FD70EB101E8710C40F8 /* FFmpegAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FFmpegAnalyzer.swift; sourceTree = "<group>"; };
+		682A33EFE554174EFAEAC726 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		7686199D317BF3490A467AC5 /* MediaIssue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaIssue.swift; sourceTree = "<group>"; };
+		824467D1B049AB8A4E2ED98F /* AVFoundationAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AVFoundationAnalyzer.swift; sourceTree = "<group>"; };
+		83CAEC9D9F33B81CFAC3D3AA /* DropZoneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DropZoneView.swift; sourceTree = "<group>"; };
+		86AF4558990DC21A5580BFEA /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		8A4E5A7B2D5157D5EF25DB53 /* VideoIntegrityCheckerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoIntegrityCheckerApp.swift; sourceTree = "<group>"; };
+		DC17D3F97E3CC44CBE8BBB0F /* MXFInspector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MXFInspector.swift; sourceTree = "<group>"; };
+		E874C6B1B8A1A6D5B51010C7 /* ContainerInspectorRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContainerInspectorRegistry.swift; sourceTree = "<group>"; };
+		E955446E3463284C52D98764 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		EF3CF183188E452F85645666 /* DetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailView.swift; sourceTree = "<group>"; };
+		F1109369C09A8C92CDAA6CC6 /* ContainerInspector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContainerInspector.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		1EEB531A8124A22E31F36EDD /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				1D56D1AF42B46851A0793C80 /* AnalyzerViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		2B3766A3219012FDDA1530B1 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				E955446E3463284C52D98764 /* Assets.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		325FB3E399B064164B19E4E1 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				0598F473E51B40C5E51F4C5B /* AnalysisProgress.swift */,
+				1814BC80F29BA693C51A8B71 /* AnalysisResult.swift */,
+				23052F53A1A97F27ED5DCC3D /* MediaFile.swift */,
+				7686199D317BF3490A467AC5 /* MediaIssue.swift */,
+				551480AD6EAC0CDE8F82C337 /* MediaMetadata.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		4039430F3DD1D836DF6FF9D1 = {
+			isa = PBXGroup;
+			children = (
+				DB4839FA06720C43C1D4B18C /* VideoIntegrityChecker */,
+				E3B2A24EC6170C1AE90B0234 /* VideoIntegrityCheckerTests */,
+				75E7A3BA3533C4C2763414DE /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		75E7A3BA3533C4C2763414DE /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				0BF750BA27A5D868B998B3BA /* VideoIntegrityChecker.app */,
+				3988D79E8958A8C1EF2A6482 /* VideoIntegrityCheckerTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		93249D67E869EEDC302FA854 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				3397B00516189D3CBD93AB8F /* AnalysisCoordinator.swift */,
+				824467D1B049AB8A4E2ED98F /* AVFoundationAnalyzer.swift */,
+				574F1FD70EB101E8710C40F8 /* FFmpegAnalyzer.swift */,
+				0D0C0E2622023130927DEA65 /* FileDiscovery.swift */,
+				C65DA3F3CFB2D3EFB77CAECD /* ContainerInspection */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		AE993CFD95FA429E946C470F /* App */ = {
+			isa = PBXGroup;
+			children = (
+				230C08C75A0BD613E2F07D14 /* VideoIntegrityChecker.entitlements */,
+				8A4E5A7B2D5157D5EF25DB53 /* VideoIntegrityCheckerApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		B59C4B075B6AFA76F6432FC4 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				86AF4558990DC21A5580BFEA /* ContentView.swift */,
+				EF3CF183188E452F85645666 /* DetailView.swift */,
+				83CAEC9D9F33B81CFAC3D3AA /* DropZoneView.swift */,
+				41435C829B2B95003ED3D6BF /* FileListView.swift */,
+				682A33EFE554174EFAEAC726 /* SettingsView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		C65DA3F3CFB2D3EFB77CAECD /* ContainerInspection */ = {
+			isa = PBXGroup;
+			children = (
+				F1109369C09A8C92CDAA6CC6 /* ContainerInspector.swift */,
+				E874C6B1B8A1A6D5B51010C7 /* ContainerInspectorRegistry.swift */,
+				3AE57C95B47ED7ED95A9208E /* ISOBMFFInspector.swift */,
+				DC17D3F97E3CC44CBE8BBB0F /* MXFInspector.swift */,
+			);
+			path = ContainerInspection;
+			sourceTree = "<group>";
+		};
+		DB4839FA06720C43C1D4B18C /* VideoIntegrityChecker */ = {
+			isa = PBXGroup;
+			children = (
+				AE993CFD95FA429E946C470F /* App */,
+				325FB3E399B064164B19E4E1 /* Models */,
+				2B3766A3219012FDDA1530B1 /* Resources */,
+				93249D67E869EEDC302FA854 /* Services */,
+				1EEB531A8124A22E31F36EDD /* ViewModels */,
+				B59C4B075B6AFA76F6432FC4 /* Views */,
+			);
+			path = VideoIntegrityChecker;
+			sourceTree = "<group>";
+		};
+		E3B2A24EC6170C1AE90B0234 /* VideoIntegrityCheckerTests */ = {
+			isa = PBXGroup;
+			children = (
+				430DA46978EAECDB5C67964A /* CoreFixTests.swift */,
+			);
+			path = VideoIntegrityCheckerTests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		0935F1FC2BD8BBFBC6D32A45 /* VideoIntegrityCheckerTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 42F543E0A47E6618E056E725 /* Build configuration list for PBXNativeTarget "VideoIntegrityCheckerTests" */;
+			buildPhases = (
+				01EACFA11CB36DAABDD66433 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4A135C1544B9A47D125973B3 /* PBXTargetDependency */,
+			);
+			name = VideoIntegrityCheckerTests;
+			packageProductDependencies = (
+			);
+			productName = VideoIntegrityCheckerTests;
+			productReference = 3988D79E8958A8C1EF2A6482 /* VideoIntegrityCheckerTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		F77B5A67059EE16EDAB4DF6C /* VideoIntegrityChecker */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2423E5799895116DD4EC9B13 /* Build configuration list for PBXNativeTarget "VideoIntegrityChecker" */;
+			buildPhases = (
+				C1931C55570066D8B508CF45 /* Sources */,
+				F7210F53E1212675AB5D2F4E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = VideoIntegrityChecker;
+			packageProductDependencies = (
+			);
+			productName = VideoIntegrityChecker;
+			productReference = 0BF750BA27A5D868B998B3BA /* VideoIntegrityChecker.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		DDE03B9ECCEBEFE9EABD9379 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					F77B5A67059EE16EDAB4DF6C = {
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = B9DC3EA5DEF37C6346C7C878 /* Build configuration list for PBXProject "VideoIntegrityChecker" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 4039430F3DD1D836DF6FF9D1;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F77B5A67059EE16EDAB4DF6C /* VideoIntegrityChecker */,
+				0935F1FC2BD8BBFBC6D32A45 /* VideoIntegrityCheckerTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		F7210F53E1212675AB5D2F4E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C2223C8997AE182292D691C2 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		01EACFA11CB36DAABDD66433 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				44F44C1737FFCB55A2FDAC5E /* CoreFixTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C1931C55570066D8B508CF45 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6BEF04FCC644AC8BD68EB107 /* AVFoundationAnalyzer.swift in Sources */,
+				FA7797786DF20A148FFC5963 /* AnalysisCoordinator.swift in Sources */,
+				786F86CE09FADD627150C18D /* AnalysisProgress.swift in Sources */,
+				55BF717D24B805BFD8111F10 /* AnalysisResult.swift in Sources */,
+				09E1E20E17DED20291555781 /* AnalyzerViewModel.swift in Sources */,
+				188473ACCDC88349AD570F79 /* ContainerInspector.swift in Sources */,
+				39D8D6553994EE34FE1CC1E5 /* ContainerInspectorRegistry.swift in Sources */,
+				BC50D94A3B2470D734D9C3ED /* ContentView.swift in Sources */,
+				444BC34923FCC4F295BB1E38 /* DetailView.swift in Sources */,
+				AC1350A1C0B1A1EC1C202859 /* DropZoneView.swift in Sources */,
+				C15ED47A6EAE218C6D3F4183 /* FFmpegAnalyzer.swift in Sources */,
+				D58C8577D36CD46550D09F0A /* FileDiscovery.swift in Sources */,
+				BB56CC22862C13D05EC303B3 /* FileListView.swift in Sources */,
+				DBB695937DACF0EED3037AB9 /* ISOBMFFInspector.swift in Sources */,
+				F321FC13EA16990E5591A3A2 /* MXFInspector.swift in Sources */,
+				98B69F72B42FCDC23B649985 /* MediaFile.swift in Sources */,
+				359E591D096903AB2BE103DC /* MediaIssue.swift in Sources */,
+				4357CD3D0C4D6C08171923DA /* MediaMetadata.swift in Sources */,
+				2067D8C3835B0F5AEBA5CC08 /* SettingsView.swift in Sources */,
+				EB774A104D82A66F08DC16B5 /* VideoIntegrityCheckerApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		4A135C1544B9A47D125973B3 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F77B5A67059EE16EDAB4DF6C /* VideoIntegrityChecker */;
+			targetProxy = 9C2AEC3F7B3D02585572C83A /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		5594D2D1B7D5C3228BAED17F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		57CC5561004C28F61132733E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = VideoIntegrityChecker/App/VideoIntegrityChecker.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_GENERATION_MODE = GeneratedFile;
+				INFOPLIST_KEY_CFBundleDisplayName = "Video Integrity Checker";
+				INFOPLIST_KEY_CFBundleName = "Video Integrity Checker";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.lucesumbrarum.VideoIntegrityChecker;
+				PRODUCT_NAME = VideoIntegrityChecker;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		666FD814A00F06E846127244 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = VideoIntegrityChecker/App/VideoIntegrityChecker.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_GENERATION_MODE = GeneratedFile;
+				INFOPLIST_KEY_CFBundleDisplayName = "Video Integrity Checker";
+				INFOPLIST_KEY_CFBundleName = "Video Integrity Checker";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.lucesumbrarum.VideoIntegrityChecker;
+				PRODUCT_NAME = VideoIntegrityChecker;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		C8A2D03FC45276A326FFBB17 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.lucesumbrarum.VideoIntegrityCheckerTests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/VideoIntegrityChecker.app/Contents/MacOS/VideoIntegrityChecker";
+			};
+			name = Release;
+		};
+		DE0E50B71A654C3C59464E86 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		F955FA6362BF6642CC272CB3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.lucesumbrarum.VideoIntegrityCheckerTests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/VideoIntegrityChecker.app/Contents/MacOS/VideoIntegrityChecker";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2423E5799895116DD4EC9B13 /* Build configuration list for PBXNativeTarget "VideoIntegrityChecker" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				57CC5561004C28F61132733E /* Debug */,
+				666FD814A00F06E846127244 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		42F543E0A47E6618E056E725 /* Build configuration list for PBXNativeTarget "VideoIntegrityCheckerTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F955FA6362BF6642CC272CB3 /* Debug */,
+				C8A2D03FC45276A326FFBB17 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		B9DC3EA5DEF37C6346C7C878 /* Build configuration list for PBXProject "VideoIntegrityChecker" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5594D2D1B7D5C3228BAED17F /* Debug */,
+				DE0E50B71A654C3C59464E86 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = DDE03B9ECCEBEFE9EABD9379 /* Project object */;
+}

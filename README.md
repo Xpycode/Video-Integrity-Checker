@@ -1,4 +1,4 @@
-# VideoAnalyzer
+# Video Integrity Checker
 
 Native macOS app that detects errors, corruption, and integrity issues in media files.
 
@@ -43,20 +43,20 @@ Drop files in, get a detailed diagnostic report — decode failures, timestamp g
 
 ```bash
 cd 01_Project
-open VideoAnalyzer.xcodeproj
+open VideoIntegrityChecker.xcodeproj
 ```
 
 Build and run with Xcode (`Cmd+R`), or from the command line:
 
 ```bash
-xcodebuild -scheme VideoAnalyzer -destination 'platform=macOS' build
+xcodebuild -scheme VideoIntegrityChecker -destination 'platform=macOS' build
 ```
 
 ## Project Structure
 
 ```
 01_Project/                    Xcode project and source code
-├── VideoAnalyzer/
+├── VideoIntegrityChecker/
 │   ├── App/                   App entry point, window management
 │   ├── Models/                Data models (AnalysisResult, MediaFile, MediaIssue, etc.)
 │   ├── Views/                 SwiftUI views (drop zone, file list, detail panel)
@@ -67,7 +67,7 @@ xcodebuild -scheme VideoAnalyzer -destination 'platform=macOS' build
 │   │   ├── AnalysisCoordinator.swift
 │   │   └── ContainerInspection/    ISO BMFF + MXF parsers
 │   └── Resources/
-├── VideoAnalyzer.xcodeproj/
+├── VideoIntegrityChecker.xcodeproj/
 └── project.yml                XcodeGen config
 02_Design/                     Design assets
 03_Screenshots/                App screenshots

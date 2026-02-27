@@ -5,7 +5,7 @@ extension Notification.Name {
 }
 
 @main
-struct VideoAnalyzerApp: App {
+struct VideoIntegrityCheckerApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()

@@ -1,6 +1,6 @@
 import Testing
 import Foundation
-@testable import VideoAnalyzer
+@testable import VideoIntegrityChecker
 
 // MARK: - stsz Tests (I3)
 

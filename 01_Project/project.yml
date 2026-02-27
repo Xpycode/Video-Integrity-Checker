@@ -1,6 +1,6 @@
-name: VideoAnalyzer
+name: VideoIntegrityChecker
 options:
-  bundleIdPrefix: com.videoanalyzer
+  bundleIdPrefix: com.lucesumbrarum
   deploymentTarget:
     macOS: "15.0"
   xcodeVersion: "16.0"
@@ -14,35 +14,50 @@ settings:
     MACOSX_DEPLOYMENT_TARGET: "15.0"
 
 targets:
-  VideoAnalyzer:
+  VideoIntegrityChecker:
     type: application
     platform: macOS
     sources:
-      - path: VideoAnalyzer
+      - path: VideoIntegrityChecker
         excludes:
           - "**/.DS_Store"
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.videoanalyzer.VideoAnalyzer
-        PRODUCT_NAME: VideoAnalyzer
+        PRODUCT_BUNDLE_IDENTIFIER: com.lucesumbrarum.VideoIntegrityChecker
+        PRODUCT_NAME: VideoIntegrityChecker
+        INFOPLIST_KEY_CFBundleDisplayName: Video Integrity Checker
+        INFOPLIST_KEY_CFBundleName: Video Integrity Checker
         INFOPLIST_GENERATION_MODE: GeneratedFile
         MARKETING_VERSION: "1.0.0"
         CURRENT_PROJECT_VERSION: "1"
-        CODE_SIGN_ENTITLEMENTS: VideoAnalyzer/App/VideoAnalyzer.entitlements
+        CODE_SIGN_ENTITLEMENTS: VideoIntegrityChecker/App/VideoIntegrityChecker.entitlements
         CODE_SIGN_STYLE: Automatic
         GENERATE_INFOPLIST_FILE: YES
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
 
-  VideoAnalyzerTests:
+  VideoIntegrityCheckerTests:
     type: bundle.unit-test
     platform: macOS
     sources:
-      - path: VideoAnalyzerTests
+      - path: VideoIntegrityCheckerTests
         excludes:
           - "**/.DS_Store"
     dependencies:
-      - target: VideoAnalyzer
+      - target: VideoIntegrityChecker
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.videoanalyzer.VideoAnalyzerTests
+        PRODUCT_BUNDLE_IDENTIFIER: com.lucesumbrarum.VideoIntegrityCheckerTests
         GENERATE_INFOPLIST_FILE: YES
+
+schemes:
+  VideoIntegrityChecker:
+    build:
+      targets:
+        VideoIntegrityChecker: all
+        VideoIntegrityCheckerTests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - VideoIntegrityCheckerTests

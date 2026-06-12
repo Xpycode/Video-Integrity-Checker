@@ -13,7 +13,7 @@
 - **Phase:** polish
 - **Focus:** UI polish, real-file testing, dual-engine cross-reference
 - **Status:** renamed + polish in progress
-- **Last session:** 2026-02-27
+- **Last session:** 2026-06-12
 
 ## Funnel Progress
 

@@ -10,6 +10,7 @@ Video Integrity Checker - Native macOS app for media file error/corruption detec
 
 | Date | Focus | Outcome | Log |
 |------|-------|---------|-----|
+| 2026-06-12 | Setup on new Mac via `/setup` from GitHub + MCP profile | Cloned repo (Directions already present), applied swift-macos MCP profile, untracked 20MB .fastembed_cache on branch `chore/untrack-cache` | [log](2026-06-12.md) |
 | 2026-02-27 | (A) Reorg + GitHub; (B) Code review audit; (C) Fix plan execution; (D) Rename → Video Integrity Checker + UI polish | Folder reorg, GitHub, README; audit; 4-wave fix (11 issues); full rename + bundle ID + button styling | [log](2026-02-27.md) |
 | 2026-02-26 | MXF inspector + enhanced validation + Tier 1 gap closure | MXF shallow parse, sample tables, NAL boundaries, corruption taxonomy, stts/ctts/SPS-PPS/box size/stco overflow (14 new checks) | [log](2026-02-26.md) |
 | 2026-02-25 | Full implementation + container inspection | 17 files, container-level diagnostics for MP4/MOV, edit list validation | [log](2026-02-25.md) |
